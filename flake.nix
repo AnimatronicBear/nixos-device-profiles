@@ -73,8 +73,8 @@
               displayManager.gdm.enable = true;
             };
 
-	    automatic-timezoned.enable = true;
-	    geoclue2.enableDemoAgent = lib.mkForce true;
+            automatic-timezoned.enable = true;
+            geoclue2.enableDemoAgent = lib.mkForce true;
 
             flatpak.enable = true;
             printing.enable = true;
