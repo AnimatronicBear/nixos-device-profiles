@@ -3,7 +3,7 @@
     nixpkgsStable.url = "nixpkgs/nixos-23.05";
     nixpkgs.url = "nixpkgs/nixos-unstable";
     rockchip = {
-      url = "github:nabam/nixos-rockchip";
+      url = "github:asonix/nixos-rockchip";
       inputs.nixpkgsStable.follows = "nixpkgsStable";
       inputs.nixpkgsUnstable.follows = "nixpkgs";
     };
