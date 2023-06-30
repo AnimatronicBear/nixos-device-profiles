@@ -2,11 +2,7 @@
   inputs = {
     nixpkgsStable.url = "nixpkgs/nixos-23.05";
     nixpkgs.url = "nixpkgs/nixos-unstable";
-    rockchip = {
-      url = "github:asonix/nixos-rockchip";
-      inputs.nixpkgsStable.follows = "nixpkgsStable";
-      inputs.nixpkgsUnstable.follows = "nixpkgs";
-    };
+    rockchip.url = "github:asonix/nixos-rockchip/asonix/pinetab2-linux-6.3.10";
   };
 
   outputs = { self, nixpkgs, rockchip, ... }:
