@@ -2,7 +2,7 @@
   inputs = {
     nixpkgsStable.url = "nixpkgs/nixos-23.05";
     nixpkgs.url = "nixpkgs/nixos-unstable";
-    rockchip.url = "github:asonix/nixos-rockchip/asonix/pinetab2-linux-6.3.10";
+    rockchip.url = "github:asonix/nixos-rockchip/asonix/pinetab2-linux-6.4.3";
   };
 
   outputs = { self, nixpkgs, rockchip, ... }:
@@ -121,7 +121,7 @@
   {
     nixosConfigurations.${hostname} = buildNixosConfiguration {
       # use a custom kernel for next rebuild (we have cachix now)
-      kernel = (rockchip.kernel system).linux_6_3_pinetab;
+      kernel = (rockchip.kernel system).linux_6_4_pinetab;
       # kernel = pkgs.linuxPackages_latest;
       # todo: uboot isn't required after we're already booting
       uBoot = (rockchip.uBoot system).uBootPineTab2;
