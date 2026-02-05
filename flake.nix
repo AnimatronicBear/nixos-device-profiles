@@ -45,6 +45,8 @@
 
             documentation.nixos.enable = false;
 
+            nix.settings.trusted-users = [ username ];
+
             users.users.${username} = {
               inherit initialPassword;
               isNormalUser = true;
@@ -57,6 +59,7 @@
             hardware.sensor.iio.enable = true;
 
             services = {
+              openssh.enable = true;
               xserver = {
                 enable = true;
                 desktopManager.gnome.enable = true;
