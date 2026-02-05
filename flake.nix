@@ -91,6 +91,12 @@
             hardware.pulseaudio.enable = false;
             security.rtkit.enable = true;
 
+            # https://github.com/systemd/systemd/pull/35304#issuecomment-3855146191
+            services.udev.extraHwdb = ''
+              sensor:modalias:*sc7a20:*
+                ACCEL_MOUNT_MATRIX=0, 0, -1; 1, 0, 0; 0, 1, 0
+            '';
+
             environment.systemPackages = with pkgs; [
               firefox
               gnomeExtensions.arc-menu
