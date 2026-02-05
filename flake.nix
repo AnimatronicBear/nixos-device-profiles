@@ -121,7 +121,7 @@
       };
   in
   {
-    nixosConfigurations.${hostname} = osConfig system;
+    nixosConfigurations.${hostname} = osConfig "x86_64-linux";
   } // utils.lib.eachDefaultSystem (system: {
     packages.image = (osConfig system).config.system.build.sdImage;
     packages.default = self.packages.${system}.image;
