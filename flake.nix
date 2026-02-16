@@ -1,11 +1,13 @@
 {
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-25.05";
+    nixpkgsStable.url = "nixpkgs/nixos-25.11";
+    nixpkgs.url = "nixpkgs/nixos-unstable";
     utils.url = "github:numtide/flake-utils";
     rockchip = {
       url = "github:nabam/nixos-rockchip";
       inputs.utils.follows = "utils";
-      inputs.nixpkgsStable.follows = "nixpkgs";
+      inputs.nixpkgsStable.follows = "nixpkgsStable";
+      inputs.nixpkgsUnstable.follows = "nixpkgs";
     };
   };
 
@@ -41,7 +43,7 @@
               "bes2600-firmware"
             ];
 
-            system.stateVersion = "25.05";
+            system.stateVersion = "25.11";
 
             documentation.nixos.enable = false;
 
@@ -60,11 +62,13 @@
 
             services = {
               openssh.enable = true;
-              xserver = {
-                enable = true;
-                desktopManager.gnome.enable = true;
-                displayManager.gdm.enable = true;
-              };
+              desktopManager.gnome.enable = true;
+              displayManager.gdm.enable = true;
+              desktopManager.plasma6.enable = true;
+              #displayManager.sddm = {
+              #  enable = true;
+              #  wayland.enable = true;
+              #};
 
               automatic-timezoned.enable = true;
               geoclue2.enableDemoAgent = lib.mkForce true;
@@ -86,9 +90,9 @@
                 pulse.enable = true;
                 jack.enable = true;
               };
+              pulseaudio.enable = false;
             };
 
-            hardware.pulseaudio.enable = false;
             security.rtkit.enable = true;
 
             # https://github.com/systemd/systemd/pull/35304#issuecomment-3855146191
@@ -104,7 +108,10 @@
               gnomeExtensions.dash-to-panel
               gnomeExtensions.gjs-osk
               gnomeExtensions.one-window-wonderland
+              #kdePackages.qtvirtualkeyboard
+              kdePackages.plasma-keyboard
               htop
+              #xinput_calibrator
             ];
 
             environment.sessionVariables = {
