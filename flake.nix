@@ -119,6 +119,7 @@
             };
             environment.systemPackages = with pkgs; [
               firefox
+              chromium
               gnomeExtensions.arc-menu
               gnomeExtensions.dash-to-dock
               gnomeExtensions.dash-to-panel
