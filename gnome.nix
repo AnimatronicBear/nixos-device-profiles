@@ -1,7 +1,7 @@
 { pkgs, lib, config, ... }:
 
 let
-  username = "pinetab2";
+  username = (import ./secrets.nix).username;
 in
 {
   services.desktopManager.gnome.enable = true;

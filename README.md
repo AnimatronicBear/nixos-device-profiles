@@ -1,14 +1,15 @@
 This is a NixOS definition for the PineTab 2.
 
 To create and 'flash' your installation sd card, change your password
-in flake.nix, and:
+in secrets.nix. If you want to enable remote updates (you probably do),
+also include your public key here. then:
 
 ```
 nix build
 dd if=result/sd-image/* of=/dev/of/sd/card bs=4M
 ```
 
-To later update it remotely:
+If you configured a public key, to later update it remotely:
 
 ```
 nixos-rebuild --flake .#PineTab2 switch --target-host pinetab2@192.168.188.55 --use-remote-sudo --ask-sudo-password

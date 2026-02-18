@@ -2,8 +2,8 @@
 
 let
   hostname = "PineTab2";
-  username = "pinetab2";
-  initialPassword = "changeme";
+  secrets = import ./secrets.nix;
+  username = secrets.username;
 in
 {
   system.stateVersion = "25.11";
@@ -13,7 +13,8 @@ in
   nix.settings.trusted-users = [ username ];
 
   users.users.${username} = {
-    inherit initialPassword;
+    initialPassword = secrets.initialPassword;
+    openssh.authorizedKeys.keys = [ secrets.authorizedKey ];
     isNormalUser = true;
     extraGroups = [ "wheel" "networkmanager" ];
     uid = 1000;
@@ -24,7 +25,11 @@ in
   networking.networkmanager.enable = true;
   hardware.sensor.iio.enable = true;
 
-  services.openssh.enable = true;
+  services.openssh = {
+    enable = builtins.stringLength secrets.authorizedKey > 0;
+    settings.PasswordAuthentication = false;
+    settings.KbdInteractiveAuthentication = false;
+  };
 
   services.automatic-timezoned.enable = true;
   services.geoclue2.enableDemoAgent = lib.mkForce true;
