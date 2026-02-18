@@ -16,27 +16,36 @@
   let
     osConfig =
       buildPlatform:
+      variant:
       nixpkgs.lib.nixosSystem {
         system = "aarch64-linux";
 
         modules = [
           rockchip.nixosModules.sdImageRockchip
           rockchip.nixosModules.dtOverlayPCIeFix
+          rockchip.nixosModules.noZFS
           ./config.nix
+          variant
           {
             # Use cross-compilation for uBoot and Kernel.
             rockchip.uBoot = rockchip.packages.${buildPlatform}.uBootPineTab2;
             boot.kernelPackages =
               rockchip.legacyPackages.${buildPlatform}.kernel_linux_6_18_pinetab_stable;
+
             hardware.firmware = [ rockchip.packages.aarch64-linux.bes2600 ];
+            nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (nixpkgs.lib.getName pkg) [
+              "bes2600-firmware"
+            ];
           }
         ];
       };
   in
   {
-    nixosConfigurations.PineTab2 = osConfig "x86_64-linux";
+    nixosConfigurations.PineTab2 = osConfig "x86_64-linux" ./gnome.nix;
+    nixosConfigurations.PineTab2-plasma = osConfig "x86_64-linux" ./plasma.nix;
   } // utils.lib.eachDefaultSystem (system: {
-    packages.image = (osConfig system).config.system.build.sdImage;
-    packages.default = self.packages.${system}.image;
+    packages.image-gnome = (osConfig system ./gnome.nix).config.system.build.sdImage;
+    packages.image-plasma = (osConfig system ./plasma.nix).config.system.build.sdImage;
+    packages.default = self.packages.${system}.image-gnome;
   });
 }
