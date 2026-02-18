@@ -3,7 +3,7 @@
 let
   hostname = "PineTab2";
   username = "pinetab2";
-  initialPassword = "changemee";
+  initialPassword = "changeme";
 in
 {
   system.stateVersion = "25.11";
