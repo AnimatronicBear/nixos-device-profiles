@@ -2,11 +2,11 @@
   "nodes": {
     "nixpkgs": {
       "locked": {
-        "lastModified": 1770197578,
-        "narHash": "sha256-AYqlWrX09+HvGs8zM6ebZ1pwUqjkfpnv8mewYwAo+iM=",
+        "lastModified": 1771008912,
+        "narHash": "sha256-gf2AmWVTs8lEq7z/3ZAsgnZDhWIckkb+ZnAo5RzSxJg=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "00c21e4c93d963c50d4c0c89bfa84ed6e0694df2",
+        "rev": "a82ccc39b39b621151d6732718e3e250109076fa",
         "type": "github"
       },
       "original": {
@@ -43,15 +43,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1770057224,
-        "narHash": "sha256-6na/6+qUj43zjLc4Qn5GkW5TLmxofcXsJhrjFYdw8/k=",
-        "owner": "nabam",
+        "lastModified": 1771380908,
+        "narHash": "sha256-pxV5SvzUo0svLilhxGnMD5jPvJpiCU8Bj9p6MjzV3dE=",
+        "owner": "raboof",
         "repo": "nixos-rockchip",
-        "rev": "fcff5c4b5eefc1960085681c81d84c82d48579c4",
+        "rev": "68f2367b4015d375a1af7571a99fa2fe742e5ad9",
         "type": "github"
       },
       "original": {
-        "owner": "nabam",
+        "owner": "raboof",
+        "ref": "pinetab2-kernel-6.18.10",
         "repo": "nixos-rockchip",
         "type": "github"
       }
