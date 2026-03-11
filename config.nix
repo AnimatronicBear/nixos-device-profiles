@@ -20,7 +20,7 @@ in
     uid = 1000;
   };
 
-  boot.kernelParams = [ "console=ttyS2,1500000n8" "rootwait" "root=LABEL=NIXOS_SD" "rw" ];
+  boot.kernelParams = [ "console=tty0" "console=ttyS2,1500000n8" "rootwait" "root=LABEL=NIXOS_SD" "rw" ];
 
   networking.networkmanager.enable = true;
   hardware.sensor.iio.enable = true;
