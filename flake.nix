@@ -46,6 +46,7 @@
   } // utils.lib.eachDefaultSystem (system: {
     packages.image-gnome = (osConfig system ./gnome.nix).config.system.build.sdImage;
     packages.image-plasma = (osConfig system ./plasma.nix).config.system.build.sdImage;
+    packages.uboot = (osConfig system {}).config.rockchip.uBoot;
     packages.default = self.packages.${system}.image-gnome;
   });
 }
