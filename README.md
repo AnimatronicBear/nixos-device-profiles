@@ -33,3 +33,9 @@ $ sudo dd if=/nix/store/your-out-path/u-boot-rockchip.bin of=/dev/your-sd-card c
 ```
 
 (the 32768 here is idbloaderOffset * 512 per https://github.com/nabam/nixos-rockchip/blob/main/modules/sd-card/sd-image-rockchip.nix#L34)
+
+To use this bootloader you need to boot with the [PineTab UART adapter](https://pine64.org/documentation/PineTab2/Development/UART_adapter/)
+with the `SD BOOT` switch in the `ON` position.
+
+I haven't tested installing it to the device yet, but presumably this
+would be be done by `flashcp -v -A /nix/store/your-out-path/u-boot-rockchip-spi.bin /dev/mtd0` while booted with `SD BOOT` _disabled_.
