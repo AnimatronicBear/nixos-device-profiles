@@ -43,6 +43,7 @@
   {
     nixosConfigurations.PineTab2 = osConfig "x86_64-linux" ./gnome.nix;
     nixosConfigurations.PineTab2-plasma = osConfig "x86_64-linux" ./plasma.nix;
+    nixosConfigurations.PineTab2-phosh = osConfig "x86_64-linux" ./phosh.nix;
   } // utils.lib.eachDefaultSystem (system: {
     packages.image-gnome = (osConfig system ./gnome.nix).config.system.build.sdImage;
     packages.image-plasma = (osConfig system ./plasma.nix).config.system.build.sdImage;
