@@ -37,5 +37,11 @@ $ sudo dd if=/nix/store/your-out-path/u-boot-rockchip.bin of=/dev/your-sd-card c
 To use this bootloader you need to boot with the [PineTab UART adapter](https://pine64.org/documentation/PineTab2/Development/UART_adapter/)
 with the `SD BOOT` switch in the `ON` position.
 
-I haven't tested installing it to the device yet, but presumably this
-would be be done by `flashcp -v -A /nix/store/your-out-path/u-boot-rockchip-spi.bin /dev/mtd0` while booted with `SD BOOT` _disabled_.
+To install the new bootloader to the pinetab's flash, boot with `SD BOOT` _disabled_ and then:
+
+```
+scp u-boot-rockchip-spi.bin pinetab2@192.168.188.55:
+ssh pinetab2@192.168.188.55
+nix-shell -p mtdutils
+flashcp -v -A u-boot-rockchip-spi.bin /dev/mtd0
+```
