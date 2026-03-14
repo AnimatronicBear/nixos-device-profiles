@@ -21,6 +21,14 @@ nixos-rebuild --flake .#PineTab2 switch --target-host pinetab2@192.168.188.55 --
 
 If you prefer Plasma to GNOME, use `nix build .#image-plasma` and `.#PineTab2-plasma`. You may need to manually enable the virtual keyboard.
 
+## Permanent installation
+
+You can do a 'permanent' non-SD install by booting
+(with `SD BOOT` disabled, the default) and dd'ing the
+sd card image onto `/dev/mmcblk0`. This can take an hour
+or so if you do it naively, TODO add example of how to do
+it efficiently here.
+
 ## Updating the u-boot bootloader
 
 `nixos-rebuild` only updates the OS itself, not the u-boot bootloader.
