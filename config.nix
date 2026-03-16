@@ -22,7 +22,34 @@ in
 
   boot.kernelParams = [ "console=tty0" "console=ttyS2,1500000n8" "rootwait" "root=LABEL=NIXOS_SD" "rw" ];
 
-  networking.networkmanager.enable = true;
+  networking.networkmanager = {
+    enable = true;
+    ensureProfiles.profiles."${secrets.ssid}" = {
+      connection = {
+        id = secrets.ssid;
+        interface-name = "wlan0";
+        type = "wifi";
+        uuid = "f5541fe5-a769-4c72-b106-d87d1432792e";
+      };
+      ipv4 = {
+        method = "auto";
+      };
+      ipv6 = {
+        addr-gen-mode = "default";
+        method = "auto";
+      };
+      proxy = { };
+      wifi = {
+        mode = "infrastructure";
+        ssid = secrets.ssid;
+      };
+      wifi-security = {
+        auth-alg = "open";
+        key-mgmt = "wpa-psk";
+        psk = secrets.psk;
+      };
+   };
+  };
   hardware.sensor.iio.enable = true;
 
   services.openssh = {
