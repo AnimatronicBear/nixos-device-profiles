@@ -4,7 +4,8 @@
     nixpkgs.url = "nixpkgs/nixos-unstable";
     utils.url = "github:numtide/flake-utils";
     rockchip = {
-      url = "github:raboof/nixos-rockchip/pinetab-unstable-kernel-6.19";
+      #url = "github:raboof/nixos-rockchip/pinetab-unstable-kernel-6.19";
+      url = "github:raboof/nixos-rockchip/video";
       #url = "github:nabam/nixos-rockchip";
       inputs.utils.follows = "utils";
       inputs.nixpkgsStable.follows = "nixpkgsStable";
