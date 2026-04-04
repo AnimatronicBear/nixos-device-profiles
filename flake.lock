@@ -43,16 +43,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1773439946,
-        "narHash": "sha256-oA6rT98EexzYZPA7vRz2BPuvTuUEpeHYbfw1zx7K/lk=",
+        "lastModified": 1775287660,
+        "narHash": "sha256-C1Du+PzepefxHGvstQvPIyte8/2tOP1MFof+J0cP8A8=",
         "owner": "raboof",
         "repo": "nixos-rockchip",
-        "rev": "0845a01089d57f5f42e3bf2ef32496043c03cc70",
+        "rev": "1a805c6587f8b2af56aa5a8274ae0d7dea1197b5",
         "type": "github"
       },
       "original": {
         "owner": "raboof",
-        "ref": "video",
+        "ref": "pinetab-linux-unstable-6.9.6-to-6.19.10",
         "repo": "nixos-rockchip",
         "type": "github"
       }
