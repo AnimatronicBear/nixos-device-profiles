@@ -24,6 +24,9 @@ in
 
   networking.networkmanager = {
     enable = true;
+    # bes2600 powersave causes wifi stability issues, dmesg:
+    # bes2600_wlan mmc2:0001:1: bes2600_pwr_enter_lp_mode, wait pm ind timeout
+    wifi.powersave = false;
     ensureProfiles.profiles."${secrets.ssid}" = {
       connection = {
         id = secrets.ssid;
