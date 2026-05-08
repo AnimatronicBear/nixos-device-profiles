@@ -5,7 +5,7 @@
     utils.url = "github:numtide/flake-utils";
     rockchip = {
       # https://github.com/nabam/nixos-rockchip/pull/79
-      url = "github:raboof/nixos-rockchip/pinetab-linux-unstable-6.9.6-to-6.19.10";
+      url = "github:raboof/nixos-rockchip/pinetab-linux-7.0";
       #url = "github:nabam/nixos-rockchip";
       inputs.utils.follows = "utils";
       inputs.nixpkgsStable.follows = "nixpkgsStable";
@@ -31,7 +31,7 @@
             # Use cross-compilation for uBoot and Kernel.
             rockchip.uBoot = rockchip.packages.${buildPlatform}.uBootPineTab2;
             boot.kernelPackages =
-              rockchip.legacyPackages.${buildPlatform}.kernel_linux_6_19_pinetab_unstable;
+              rockchip.legacyPackages.${buildPlatform}.kernel_linux_7_0_pinetab_unstable;
 
             hardware.firmware = [ rockchip.packages.aarch64-linux.bes2600 ];
             nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (nixpkgs.lib.getName pkg) [

@@ -2,11 +2,11 @@
   "nodes": {
     "nixpkgs": {
       "locked": {
-        "lastModified": 1773282481,
-        "narHash": "sha256-b/GV2ysM8mKHhinse2wz+uP37epUrSE+sAKXy/xvBY4=",
+        "lastModified": 1777578337,
+        "narHash": "sha256-Ad49moKWeXtKBJNy2ebiTQUEgdLyvGmTeykAQ9xM+Z4=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "fe416aaedd397cacb33a610b33d60ff2b431b127",
+        "rev": "15f4ee454b1dce334612fa6843b3e05cf546efab",
         "type": "github"
       },
       "original": {
@@ -43,16 +43,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1775287660,
-        "narHash": "sha256-C1Du+PzepefxHGvstQvPIyte8/2tOP1MFof+J0cP8A8=",
+        "lastModified": 1778273074,
+        "narHash": "sha256-gPbn0KjsgS2cJa/ENSMtjN0h8dIEy+2N6g8tw9915pM=",
         "owner": "raboof",
         "repo": "nixos-rockchip",
-        "rev": "1a805c6587f8b2af56aa5a8274ae0d7dea1197b5",
+        "rev": "2aab433a41cc9ba862ae73012acdd2eec3547667",
         "type": "github"
       },
       "original": {
         "owner": "raboof",
-        "ref": "pinetab-linux-unstable-6.9.6-to-6.19.10",
+        "ref": "pinetab-linux-7.0",
         "repo": "nixos-rockchip",
         "type": "github"
       }
