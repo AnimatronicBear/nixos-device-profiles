@@ -95,5 +95,9 @@ in
 
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
+    extra-substituters = [ "https://nabam-nixos-rockchip.cachix.org" ];
+    extra-trusted-public-keys = [
+      "nabam-nixos-rockchip.cachix.org-1:BQDltcnV8GS/G86tdvjLwLFz1WeFqSk7O9yl+DR0AVM"
+    ];
   };
 })

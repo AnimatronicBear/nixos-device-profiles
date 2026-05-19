@@ -30,6 +30,13 @@
       };
   in
   {
+    nixConfig = {
+      extra-substituters = [ "https://nabam-nixos-rockchip.cachix.org" ];
+      extra-trusted-public-keys = [
+        "nabam-nixos-rockchip.cachix.org-1:BQDltcnV8GS/G86tdvjLwLFz1WeFqSk7O9yl+DR0AVM"
+      ];
+    };
+
     nixosConfigurations.PineBookPro = osConfig "x86_64-linux" ./devices/pinebook-pro.nix ./gnome.nix;
     nixosConfigurations.PineBookPro-plasma = osConfig "x86_64-linux" ./devices/pinebook-pro.nix ./plasma.nix;
     nixosConfigurations.PineBookPro-phosh = osConfig "x86_64-linux" ./devices/pinebook-pro.nix ./phosh.nix;
