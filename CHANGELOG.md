@@ -5,6 +5,8 @@
 ### Added
 - `settings.nix` — tracked user preferences (username, stateVersion, git config, extra packages)
 - `compose.yaml` — `git add -f secrets.nix` before nix commands to allow untracked secrets in Docker builds
+- `compose.yaml` — `fmt` service for `nix fmt` via Docker compose
+- `AGENTS.md` — reminders to use Docker compose for all Nix commands and to run `nix fmt` after editing
 
 ### Changed
 - **settings-split**: `username` moved from `secrets.nix` (gitignored) → `settings.nix` (tracked)
