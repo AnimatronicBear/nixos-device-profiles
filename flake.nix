@@ -18,11 +18,16 @@
   outputs = { self, nixpkgs, rockchip, utils, home-manager, ... }:
 
   let
+    overlayModule = { config, lib, ... }: {
+      nixpkgs.overlays = import ./overlays;
+    };
+
     osConfig = buildPlatform: deviceModule: variant:
       nixpkgs.lib.nixosSystem {
         system = "aarch64-linux";
         specialArgs = { inherit rockchip buildPlatform; };
         modules = [
+          overlayModule
           { nixpkgs.hostPlatform = "aarch64-linux"; }
           { nixpkgs.buildPlatform = buildPlatform; }
           rockchip.nixosModules.sdImageRockchip
@@ -39,6 +44,7 @@
         system = "aarch64-linux";
         specialArgs = { inherit rockchip buildPlatform; };
         modules = [
+          overlayModule
           { nixpkgs.hostPlatform = "aarch64-linux"; }
           { nixpkgs.buildPlatform = buildPlatform; }
           rockchip.nixosModules.sdImageRockchipInstaller
