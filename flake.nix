@@ -33,6 +33,20 @@
           deviceModule
         ];
       };
+
+    installerConfig = buildPlatform: deviceModule:
+      nixpkgs.lib.nixosSystem {
+        system = "aarch64-linux";
+        specialArgs = { inherit rockchip buildPlatform; };
+        modules = [
+          { nixpkgs.hostPlatform = "aarch64-linux"; }
+          { nixpkgs.buildPlatform = buildPlatform; }
+          rockchip.nixosModules.sdImageRockchipInstaller
+          rockchip.nixosModules.noZFS
+          ./config.nix
+          deviceModule
+        ];
+      };
   in
   {
     nixConfig = {
@@ -115,6 +129,8 @@
     packages.image-pinetab2-plasma = (osConfig system ./devices/pinetab2.nix ./plasma.nix).config.system.build.sdImage;
     packages.uboot = (osConfig system ./devices/pinebook-pro.nix { }).config.rockchip.uBoot;
     packages.uboot-pinetab2 = (osConfig system ./devices/pinetab2.nix { }).config.rockchip.uBoot;
+    packages.image-installer-pinebookpro = (installerConfig system ./devices/pinebook-pro.nix).config.system.build.sdImage;
+    packages.image-installer-pinetab2 = (installerConfig system ./devices/pinetab2.nix).config.system.build.sdImage;
     packages.default = self.packages.${system}.image-gnome;
 
     formatter = pkgs.nixfmt-tree;

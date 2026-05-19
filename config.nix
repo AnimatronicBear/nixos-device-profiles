@@ -7,6 +7,8 @@ in
 {
   system.stateVersion = "25.11";
 
+  zramSwap.enable = true;
+
   documentation.nixos.enable = false;
 
   nix.settings.trusted-users = [ username ];

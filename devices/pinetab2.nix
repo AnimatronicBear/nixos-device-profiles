@@ -3,6 +3,7 @@
 let
   username = (import ../secrets.nix).username;
 in {
+  imports = [ rockchip.nixosModules.dtOverlayPCIeFix ];
   networking.hostName = "PineTab2";
   rockchip.uBoot = rockchip.packages.${buildPlatform}.uBootPineTab2;
   boot.kernelPackages = rockchip.legacyPackages.${buildPlatform}.kernel_linux_6_18_pinetab_stable;
