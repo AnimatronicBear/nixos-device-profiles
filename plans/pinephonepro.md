@@ -21,6 +21,8 @@
 **Status**: Discontinued Aug 2025, but still relevant as an open hardware
 reference phone. Same SoC family (RK3399) as PineBookPro.
 
+---
+
 ## What reuses existing infrastructure
 
 | Component | Source | Notes |
@@ -32,99 +34,122 @@ reference phone. Same SoC family (RK3399) as PineBookPro.
 | **Phosh desktop** | Existing `phosh.nix` | Needs adjustment for phone-specific config |
 | **Cachix cache** | `nabam-nixos-rockchip.cachix.org` | Already configured |
 
-## What needs new work
+---
 
-### 1. Device module — `devices/pinephonepro.nix`
+## External repo analysis
 
-```nix
-{ lib, pkgs, config, rockchip, buildPlatform, ... }: {
-  networking.hostName = "PinePhonePro";
-  rockchip.uBoot = rockchip.packages.${buildPlatform}.uBootPinePhonePro;  # TBD
-  boot.kernelPackages = rockchip.legacyPackages.${buildPlatform}.kernel_linux_latest_rockchip_stable;
-  hardware.firmware = [ rockchip.packages.${buildPlatform}.brcm43456 ];  # or similar
-  nixpkgs.config.allowUnfree = true;
-  hardware.sensor.iio.enable = true;
-}
-```
+### nixos-hardware (`github:NixOS/nixos-hardware`)
 
-**Open questions**:
-- Does `nabam/nixos-rockchip` provide PinePhone Pro u-boot and kernel packages?
-  If not, may need to use `mobile-nixos` (<https://github.com/mobile-nixos/mobile-nixos>)
-  or package them manually.
-- What device tree file does the PPP use? The RK3399S may need a specific DT.
+**What it has for Pine devices**:
+- `pine64/pinebook-pro` — kernel modules overlay for initrd, wifi.powersave fix,
+  redistributable firmware flag
 
-### 2. Modem configuration
+**What it's missing**:
+- No PinePhone Pro profile
+- No PineTab2 profile
+- No phone/modem services
 
-The EG25-G modem requires:
-- `services.pppd.enable` or ModemManager (`services.modemmanager.enable`)
-- `hardware.simlock` or manual AT config
-- GPS support via the same modem (gpsd or ModemManager location)
-- Audio routing for VoIP calls (PulseAudio/WirePlumber profile)
+**Could we use it?** The pinebook-pro module provides `boot.initrd.kernelModules`
+and `networking.networkmanager.wifi.powersave` that could replace some manual
+config in `devices/pinebook-pro.nix`. Not worth adding as a dependency for
+existing devices (trivial config). For PinePhone Pro, it offers nothing.
 
-### 3. Phone-specific services
+### mobile-nixos (`github:mobile-nixos/mobile-nixos`)
 
-- `powerManagement` — battery monitoring, suspend-on-lid-close → sleep-on-power-button
-- `services.phone-utils` — dialer, SMS (may be DE-specific)
-- Kill switch daemon — GPIO toggles for LTE/WiFi/mic/camera
-- Vibration motor / notification LED
-- Proximity sensor (screen off during call)
+**What it has for Pine devices**:
+- `pine64-pinephonepro` — **full device support** (kernel, firmware, modem,
+  audio, USB gadget, device tree)
+- `pine64-pinephone` — original PinePhone
+- `pine64-pinetab` — original PineTab (Allwinner A64, **not** PineTab2)
 
-### 4. Display / rotation
+**PinePhone Pro kernel** (`devices/pine64-pinephonepro/kernel/default.nix`):
+- Custom kernel v6.4.7 built from `pine64-org/linux` GitLab repo
+- Patches: USB role switch, LED defaults, DWC3 OTG
+- Installs `rk3399-pinephone-pro.dtb` device tree
+- Monolithic (non-modular), not compressed
+- Kernel v6.4.7 is quite old (mid-2023) — likely outdated
 
-- Native portrait 720×1440, different from the landscape panels of
-  PineBookPro/PineTab2
-- ACCEL_MOUNT_MATRIX will differ from existing devices
-- Phosh expects portrait by default, but the matrix needs calibration
+**PinePhone Pro firmware** (`devices/pine64-pinephonepro/firmware/default.nix`):
+- AP6256 WiFi/BT firmware from Manjaro GitLab
+- BRCM firmware from xff.cz git
+- Pinebook firmware from Manjaro GitLab (for WiFi/BT calibration)
+- Rockchip DPTX firmware
 
-### 5. Desktop variants
+**PinePhone Pro config** (`devices/pine64-pinephonepro/default.nix`):
+- EG25-G modem via `services.eg25-manager.enable`
+- ALSA UCM profiles for audio (`mobile.quirks.audio.alsa-ucm-meld`)
+- USB gadget mode (`gadgetfs`) for RNDIS, mass storage, ADB
+- Serial console on ttyS2
+- Boot config for internal eMMC storage path
+- Stage-1 tasks for USB role switching
 
-| Variant | Priority | Notes |
-|---------|----------|-------|
-| **Phosh** | Primary | Phone-optimized; reuses `phosh.nix` with tweaks |
-| **Plasma Mobile** | Secondary | Different from existing `plasma.nix` (desktop Plasma 6) |
-| **GNOME** | Low | Desktop GNOME is awkward on a phone |
+**Key differences from our project's approach**:
+- Uses `mobile.*` NixOS options (custom module system) — not compatible with
+  `nixos-rockchip` / `sdImageRockchip` approach
+- Has its own kernel builder, initrd system, boot image generation
+- Replaces the entire SD image build pipeline rather than layering on top
+- Not designed to be mixed with `nabam/nixos-rockchip`
 
-### 6. Flake additions (`flake.nix`)
+---
 
-```nix
-nixosConfigurations.PinePhonePro = osConfig "x86_64-linux" ./devices/pinephonepro.nix ./phosh.nix;
+## Evaluation and recommendation
 
-packages.image-pinephonepro = (osConfig system ./devices/pinephonepro.nix ./phosh.nix).config.system.build.sdImage;
-packages.uboot-pinephonepro = (osConfig system ./devices/pinephonepro.nix { }).config.rockchip.uBoot;
-packages.image-installer-pinephonepro = (installerConfig system ./devices/pinephonepro.nix).config.system.build.sdImage;
+| Aspect | nixos-hardware | mobile-nixos |
+|--------|---------------|--------------|
+| Useful for existing devices? | Trivial overlap only | No (different infra) |
+| PinePhone Pro support? | None | Full, but infra mismatch |
+| Effort to integrate | Low value | Architectural fork |
 
-checks.PinePhonePro-phosh = mkCheck "PinePhonePro" ./devices/pinephonepro.nix ./phosh.nix "phosh";
-```
+**Neither repo should be adopted as a dependency for this project.**
 
-### 7. Check assertions
+### For existing devices (PineBookPro / PineTab2)
 
-Add `device == "PinePhonePro"` branches to `mkCheck`:
-- iio sensor: enabled (like PineTab2)
-- No landscape.service (not a keyboard dock device)
-- ACCEL_MOUNT_MATRIX: specific to PPP sensor
-- hostName: "PinePhonePro"
+The nixos-hardware pinebook-pro module offers only `boot.initrd.kernelModules`
+and `wifi.powersave`. These are already handled manually in the device configs
+and `config.nix`. Adding it as a flake input is not worth the dependency.
 
-## Alternative: mobile-nixos
+mobile-nixos doesn't support PineTab2 and uses a different build system.
 
-If `nabam/nixos-rockchip` doesn't support PinePhone Pro well, consider
-adding `mobile-nixos` as a flake input instead. mobile-nixos specifically
-targets phones (including the PPP) and provides:
-- Working u-boot + kernel for PPP
-- ModemManager + audio routing
-- Power management
-- Sxmo/Phosh/Plasma Mobile integrations
+### For PinePhone Pro
 
-However, mobile-nixos has its own build infrastructure that would need to
-be reconciled with the existing `osConfig` / `rockchip.nixosModules.sdImageRockchip`
-approach used here. This is a larger refactor.
+mobile-nixos provides the most complete PinePhone Pro support, but its
+infrastructure is fundamentally different from our nixos-rockchip-based
+approach. Adopting it would mean either:
 
-## Recommended approach (phased)
+1. **Dual-flake approach**: Keep this flake for PinePhonePro (using nixos-rockchip)
+   and add a separate `mobile-nixos` flake output for the phone. This means
+   maintaining two build pipelines for the same project.
+
+2. **Selective cherry-picking**: Extract the PinePhone Pro kernel config,
+   firmware packaging, modem service, and DT patches from mobile-nixos and
+   adapt them to the nixos-rockchip `sdImageRockchip` pipeline. The `eg25-manager`
+   and ALSA UCM profiles are standard NixOS packages that can be used directly.
+
+3. **Not worth doing**: Given the PinePhone Pro was discontinued in August 2025
+   and the kernel from mobile-nixos is stuck at 6.4.7 (mid-2023), the effort
+   may exceed the value. The nixos-rockchip upstream would need to add PPP
+   support first for a clean integration.
+
+## Recommended approach (cherry-picking from mobile-nixos)
+
+If proceeding despite the challenges, the phased approach is:
 
 | Phase | What |
 |-------|------|
-| **1** | Investigate nabam/nixos-rockchip PPP support. Probe `nix eval github:nabam/nixos-rockchip#legacyPackages.x86_64-linux --apply 'x: builtins.attrNames x'` for u-boot/kernel variants. |
-| **2** | Create `devices/pinephonepro.nix` with DT, kernel, u-boot, firmware. |
-| **3** | Add basic `nixosConfigurations.PinePhonePro` and verify evaluation with `nix flake check --no-build`. |
-| **4** | Add modem, power management, sensor config as separate commits. |
-| **5** | Add SD image package + installer + checks. |
-| **6** | Test on real hardware. |
+| **1** | Investigate `nabam/nixos-rockchip` for any PPP support. Probe: `nix eval github:nabam/nixos-rockchip#legacyPackages.x86_64-linux --apply 'x: builtins.attrNames x'` |
+| **2** | Create `devices/pinephonepro.nix` referencing the PinePhone Pro DT from the RK3399 kernel. If nixos-rockchip doesn't provide the DT, package the mobile-nixos kernel's DT output or build megi's kernel fork (<https://github.com/megi/linux>) |
+| **3** | Package AP6256 firmware (reference mobile-nixos firmware derivation) |
+| **4** | Add basic `nixosConfigurations.PinePhonePro` and verify evaluation |
+| **5** | Add EG25-G modem via `services.eg25-manager` (available in nixpkgs) and ALSA UCM profiles from mobile-nixos |
+| **6** | Add USB gadget mode (`gadgetfs`), kill switch GPIO handling, battery monitoring |
+| **7** | Add SD image package + installer + checks |
+| **8** | Test on real hardware |
+
+Kernel alternatives:
+- **megi's kernel** (<https://github.com/megi/linux>) — Community fork with
+  active PinePhone Pro support, updated regularly. Used by Manjaro ARM and
+  Arch Linux ARM for PPP.
+- **mobile-nixos kernel** (v6.4.7) — Old but known-working. DT patches are
+  the most valuable part.
+- **rockchip flake kernel** — If it already includes the PPP DT, no custom
+  kernel needed at all.
