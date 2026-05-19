@@ -11,7 +11,10 @@
 - `nix.settings.max-jobs` and `cores` for parallel builds
 - `nixfmt-tree` formatter (`nix fmt`)
 - `secrets.nix.example` for credential schema reference
-- `CHANGELOG.md`
+- `zramSwap.enable` — compressed RAM swap for 4GB devices
+- `dtOverlayPCIeFix` — RK3566 PCIe device tree overlay for PineTab2
+- Installer SD image packages (`.#image-installer-*`) — minimal recovery images
+- `compose.yaml` — Docker compose services for nix build/check in a container
 
 ### Changed
 - Split device-specific hardware into `devices/pinebook-pro.nix` and `devices/pinetab2.nix`

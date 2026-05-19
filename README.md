@@ -44,6 +44,13 @@ nix build .#image-pinetab2-gnome
 nix build .#image-pinetab2-plasma
 ```
 
+Installer images (no desktop, for recovery/installation):
+
+```shell
+nix build .#image-installer-pinebookpro
+nix build .#image-installer-pinetab2
+```
+
 Flash the result:
 
 ```shell
@@ -118,6 +125,18 @@ settings.
 The flake uses `nabam-nixos-rockchip.cachix.org` for pre-built kernels,
 u-boot, and firmware (configured at both the flake and NixOS system level).
 
+## Docker compose
+
+Run nix build and checks inside a container without a host nix-daemon:
+
+```shell
+docker compose run check
+docker compose run build
+docker compose run dev    # interactive shell
+```
+
+The container mounts the host `/nix` store directly (needs root Docker).
+
 ## Checks
 
 ```shell
@@ -140,7 +159,12 @@ nix fmt    # uses nixfmt-tree
 |--------|---------|
 | Build image (PBP GNOME) | `nix build` |
 | Build image (PT2 GNOME) | `nix build .#image-pinetab2-gnome` |
+| Build installer (PBP) | `nix build .#image-installer-pinebookpro` |
+| Build installer (PT2) | `nix build .#image-installer-pinetab2` |
 | Build u-boot (PBP) | `nix build .#uboot` |
 | Build u-boot (PT2) | `nix build .#uboot-pinetab2` |
+| Docker check | `docker compose run check` |
+| Docker build | `docker compose run build` |
+| Docker shell | `docker compose run dev` |
 | Run all checks | `nix flake check` |
 | Format Nix files | `nix fmt` |
