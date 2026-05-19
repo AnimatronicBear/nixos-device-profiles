@@ -30,6 +30,10 @@
 - Removed dead `nixosConfigurations` let-binding with unreachable substituters
 - Nested check attrsets → flat names for `nix flake check` compatibility
 - **CVE-2026-31431 (Copy Fail)**: blacklisted `algif_aead` kernel module; updated nixpkgsStable lock to kernel with upstream fix
+- `compose.yaml` — replaced `/nix:/nix` bind mount with named volume (hid the container's nix binary)
+- `compose.yaml` — added `git safe.directory` workaround for git repo ownership check in container
+- `flake.lock` — fixed `lastModified` mismatch for `nixpkgsStable` input that broke `nix flake check`
+- `flake.nix` — added missing `home-manager` module to `installerConfig` (option not found error)
 
 ---
 

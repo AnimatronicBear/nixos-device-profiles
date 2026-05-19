@@ -142,7 +142,9 @@ docker compose run build
 docker compose run dev    # interactive shell
 ```
 
-The container mounts the host `/nix` store directly (needs root Docker).
+A named Docker volume (`nix-store`) is used for `/nix`, preserving the
+container's built-in nix binary while caching store paths across runs
+(needs root Docker).
 
 ## Checks
 
