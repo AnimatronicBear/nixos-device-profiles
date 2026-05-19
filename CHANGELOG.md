@@ -5,6 +5,11 @@
 ### Added
 - Plan for Qubes OS template qube image output (`plans/qubes-template.md`)
 - Plan for standard x86_64 PC support (`plans/x86pc.md`)
+
+### Fixed
+- `onnxruntime` cross-compilation failure (`protoc` binary format error) —
+  added `overlays/onnxruntime.nix` to force build-native `protoc` during
+  aarch64 cross-compilation
 - Home-manager integration with user package and dotfile management
 - `home.nix` — git signing/config, VSCodium extensions, LibreWolf, ungoogled-chromium
 - Docker daemon enabled, user added to `docker` group
