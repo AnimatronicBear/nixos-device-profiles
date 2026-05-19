@@ -93,7 +93,7 @@ steps:
 
 For Codeberg specifically, **Cachix** is the easiest option (free for public repos):
 1. Sign up at https://app.cachix.org
-2. Create a cache (e.g. `pinetab2-nixos`)
+2. Create a cache (e.g. `nixos-device-profiles`)
 3. Generate a write token
 4. Add `CACHIX_AUTH_TOKEN` as a CI secret in the Codeberg repo
 
