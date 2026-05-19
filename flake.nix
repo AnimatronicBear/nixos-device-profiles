@@ -43,6 +43,7 @@
           { nixpkgs.buildPlatform = buildPlatform; }
           rockchip.nixosModules.sdImageRockchipInstaller
           rockchip.nixosModules.noZFS
+          home-manager.nixosModules.home-manager
           ./config.nix
           deviceModule
         ];

@@ -5,10 +5,10 @@ services:
     working_dir: /workspace
     volumes:
       - .:/workspace
-      - /nix:/nix
+      - nix-store:/nix
     environment:
       - NIX_CONFIG=experimental-features = nix-command flakes
-    command: nix flake check
+    command: sh -c 'git config --global safe.directory /workspace 2>/dev/null; exec nix flake check "$@"' --
 
   build:
     image: nixos/nix:2.34.7
@@ -16,10 +16,10 @@ services:
     working_dir: /workspace
     volumes:
       - .:/workspace
-      - /nix:/nix
+      - nix-store:/nix
     environment:
       - NIX_CONFIG=experimental-features = nix-command flakes
-    command: nix build .#image-gnome
+    command: sh -c 'git config --global safe.directory /workspace 2>/dev/null; exec nix build .#image-gnome "$@"' --
 
   dev:
     image: nixos/nix:2.34.7
@@ -27,8 +27,11 @@ services:
     working_dir: /workspace
     volumes:
       - .:/workspace
-      - /nix:/nix
+      - nix-store:/nix
     environment:
       - NIX_CONFIG=experimental-features = nix-command flakes
     stdin_open: true
     tty: true
+
+volumes:
+  nix-store:
