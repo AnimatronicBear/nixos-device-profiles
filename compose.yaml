@@ -1,6 +1,6 @@
 services:
   check:
-    image: nixos/nix:2.24
+    image: nixos/nix:2.34.7
     platform: linux/amd64
     working_dir: /workspace
     volumes:
@@ -11,7 +11,7 @@ services:
     command: nix flake check
 
   build:
-    image: nixos/nix:2.24
+    image: nixos/nix:2.34.7
     platform: linux/amd64
     working_dir: /workspace
     volumes:
@@ -22,7 +22,7 @@ services:
     command: nix build .#image-gnome
 
   dev:
-    image: nixos/nix:2.24
+    image: nixos/nix:2.34.7
     platform: linux/amd64
     working_dir: /workspace
     volumes:

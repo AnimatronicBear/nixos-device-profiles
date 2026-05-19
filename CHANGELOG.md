@@ -29,6 +29,7 @@
 - Cachix binary cache was dead code; now configured at both flake and system level
 - Removed dead `nixosConfigurations` let-binding with unreachable substituters
 - Nested check attrsets → flat names for `nix flake check` compatibility
+- **CVE-2026-31431 (Copy Fail)**: blacklisted `algif_aead` kernel module; updated nixpkgsStable lock to kernel with upstream fix
 
 ---
 
