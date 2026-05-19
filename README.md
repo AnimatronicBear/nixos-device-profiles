@@ -125,6 +125,13 @@ settings.
 The flake uses `nabam-nixos-rockchip.cachix.org` for pre-built kernels,
 u-boot, and firmware (configured at both the flake and NixOS system level).
 
+## Security
+
+**CVE-2026-31431 (Copy Fail)** is mitigated by blacklisting `algif_aead`
+in `config.nix`. The nixpkgs stable input is updated to a kernel containing
+the upstream fix (available for PineBookPro; PineTab2 uses a custom DanctNIX
+kernel that relies on the blacklist workaround).
+
 ## Docker compose
 
 Run nix build and checks inside a container without a host nix-daemon:

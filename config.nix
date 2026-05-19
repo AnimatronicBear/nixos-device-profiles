@@ -9,6 +9,11 @@ in
 
   zramSwap.enable = true;
 
+  # CVE-2026-31431 (Copy Fail) mitigation — algif_aead allows local
+  # privilege escalation on kernels 4.14–6.19.12. Blacklist the module
+  # until the kernel can be updated with the upstream fix.
+  boot.blacklistedKernelModules = [ "algif_aead" ];
+
   documentation.nixos.enable = false;
 
   nix.settings.trusted-users = [ username ];
