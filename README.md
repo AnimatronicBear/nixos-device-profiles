@@ -1,11 +1,15 @@
 # nixos-device-profiles
 
+**⚠ WIP — NOT FUNCTIONAL. Do not use for production or anything security-sensitive.**
+
 Multi-device NixOS flake — cross-compiled from x86_64 → aarch64-linux.
 Currently supports **PineBookPro** (RK3399) and **PineTab2** (RK3566).
 
 Forked from [raboof/pinetab2-nixos](https://codeberg.org/raboof/pinetab2-nixos)
-(PineTab2-only). This fork adds multi-device architecture, home-manager,
-and expandable device profiles.
+(PineTab2-only). Post-fork changes (settings split, device modules, overlays,
+CI structure) are **largely LLM-generated and have not been reviewed by a
+human.** The flake may eval but images may fail to build or boot, and
+configuration may be insecure. Use at your own risk.
 
 ## Supported configurations
 
