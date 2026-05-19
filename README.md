@@ -20,13 +20,15 @@ multi-device architecture, and home-manager integration.
 
 ## Before building
 
-Edit `secrets.nix` (tracked with placeholder values — keep your changes local):
+### 1. `secrets.nix` (gitignored)
 
-```
-git update-index --skip-worktree secrets.nix   # prevent accidental commits
-```
+Copy `secrets.nix.example` to `secrets.nix` and edit — set `initialPassword`,
+`authorizedKey`, `ssid`, `psk`.
 
-Set `initialPassword`, `authorizedKey`, `ssid`, `psk`.
+### 2. `settings.nix` (tracked)
+
+Edit `settings.nix` to set your `username`, `gitUserName`, `gitUserEmail`,
+and package preferences.
 
 ## Building an SD card image
 
@@ -109,16 +111,13 @@ flashcp -v -A u-boot-rockchip-spi.bin /dev/mtd0
 
 | Package | Where | Notes |
 |---------|-------|-------|
-| `git` | System (`config.nix`) | |
+| `git`, `htop` | System (`settings.nix` → `config.nix`) | `extraSystemPackages` |
 | `docker` | System (`config.nix`) | User in `docker` group |
-| `librewolf` | User (`home.nix`) | uBlock Origin packaged by default |
-| `ungoogled-chromium` | User (`home.nix`) | |
-| `vscodium` | User (`home.nix`) | Extensions via `pkgs.vscode-extensions` |
+| `librewolf`, `ungoogled-chromium`, `vscodium` | User (`settings.nix` → `home.nix`) | `extraUserPackages` |
 
-User packages and dotfiles are managed by
-[home-manager](https://github.com/nix-community/home-manager) — see
-`home.nix` to configure git signatures, VSCodium extensions, and browser
-settings.
+System packages and user packages are configured in `settings.nix`. User
+dotfiles (git config, VSCodium extensions, browser settings) are managed by
+[home-manager](https://github.com/nix-community/home-manager) in `home.nix`.
 
 ## Binary cache
 

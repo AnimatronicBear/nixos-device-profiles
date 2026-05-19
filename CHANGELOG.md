@@ -3,6 +3,16 @@
 ## [unreleased]
 
 ### Added
+- `settings.nix` — tracked user preferences (username, stateVersion, git config, extra packages)
+- `compose.yaml` — `git add -f secrets.nix` before nix commands to allow untracked secrets in Docker builds
+
+### Changed
+- **settings-split**: `username` moved from `secrets.nix` (gitignored) → `settings.nix` (tracked)
+- `config.nix` — reads `stateVersion`, `username`, `extraSystemPackages` from `settings.nix`
+- `home.nix` — reads `stateVersion`, `gitUserName`, `gitUserEmail`, `extraUserPackages` from `settings.nix`
+- `devices/pinetab2.nix` — reads `username` from `settings.nix` (via specialArgs) instead of importing `secrets.nix`
+- `flake.nix` — imports `settings.nix` and passes it via `specialArgs` to all NixOS and home-manager modules
+- `secrets.nix` / `secrets.nix.example` — `username` field removed
 - Plan for Qubes OS template qube image output (`plans/qubes-template.md`)
 - Plan for standard x86_64 PC support (`plans/x86pc.md`)
 
