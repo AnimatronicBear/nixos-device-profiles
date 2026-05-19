@@ -6,7 +6,10 @@ Multi-device NixOS flake — cross-compiled from x86_64 → aarch64-linux.
 Currently supports **PineBookPro** (RK3399) and **PineTab2** (RK3566).
 
 Forked from [raboof/pinetab2-nixos](https://codeberg.org/raboof/pinetab2-nixos)
-(PineTab2-only). 
+(PineTab2-only).
+
+Mirrored on [Codeberg](https://codeberg.org/AnimatronicBear/nixos-device-profiles)
+and [GitHub](https://github.com/AnimatronicBear/nixos-device-profiles).
 
 **⚠ LLM Assisted / Generated Experimental Work**
 Post-fork changes (settings split, device modules, overlays,
