@@ -1,7 +1,6 @@
 ({ pkgs, lib, config, ... }:
 
 let
-  hostname = "PineTab2";
   secrets = import ./secrets.nix;
   username = secrets.username;
 in
@@ -26,7 +25,7 @@ in
     enable = true;
     # bes2600 powersave causes wifi stability issues, dmesg:
     # bes2600_wlan mmc2:0001:1: bes2600_pwr_enter_lp_mode, wait pm ind timeout
-    wifi.powersave = false;
+    # wifi.powersave = false;
     ensureProfiles.profiles."${secrets.ssid}" = {
       connection = {
         id = secrets.ssid;
@@ -53,7 +52,6 @@ in
       };
    };
   };
-  hardware.sensor.iio.enable = true;
 
   services.openssh = {
     enable = builtins.stringLength secrets.authorizedKey > 0;
@@ -95,7 +93,6 @@ in
     MOZ_ENABLE_WAYLAND = "1";
   };
 
-  networking.hostName = "${hostname}";
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
   };
