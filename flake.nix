@@ -18,6 +18,7 @@
   outputs = { self, nixpkgs, rockchip, utils, home-manager, ... }:
 
   let
+    settings = import ./settings.nix;
     overlayModule = { config, lib, ... }: {
       nixpkgs.overlays = import ./overlays;
     };
@@ -25,7 +26,7 @@
     osConfig = buildPlatform: deviceModule: variant:
       nixpkgs.lib.nixosSystem {
         system = "aarch64-linux";
-        specialArgs = { inherit rockchip buildPlatform; };
+        specialArgs = { inherit rockchip buildPlatform settings; };
         modules = [
           overlayModule
           { nixpkgs.hostPlatform = "aarch64-linux"; }
@@ -42,7 +43,7 @@
     installerConfig = buildPlatform: deviceModule:
       nixpkgs.lib.nixosSystem {
         system = "aarch64-linux";
-        specialArgs = { inherit rockchip buildPlatform; };
+        specialArgs = { inherit rockchip buildPlatform settings; };
         modules = [
           overlayModule
           { nixpkgs.hostPlatform = "aarch64-linux"; }

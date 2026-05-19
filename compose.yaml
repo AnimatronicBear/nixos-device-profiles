@@ -8,7 +8,14 @@ services:
       - nix-store:/nix
     environment:
       - NIX_CONFIG=experimental-features = nix-command flakes
-    command: sh -c 'git config --global safe.directory /workspace 2>/dev/null; exec nix flake check "$@"' --
+    command: sh -c '
+      git config --global safe.directory /workspace 2>/dev/null;
+      [ -f secrets.nix ] && git add -f secrets.nix;
+      nix flake check "$@";
+      rc=$?;
+      git reset -- secrets.nix 2>/dev/null || true;
+      exit $rc
+    ' --
 
   build:
     image: nixos/nix:2.34.7
@@ -19,7 +26,14 @@ services:
       - nix-store:/nix
     environment:
       - NIX_CONFIG=experimental-features = nix-command flakes
-    command: sh -c 'git config --global safe.directory /workspace 2>/dev/null; exec nix build .#image-gnome "$@"' --
+    command: sh -c '
+      git config --global safe.directory /workspace 2>/dev/null;
+      [ -f secrets.nix ] && git add -f secrets.nix;
+      nix build .#image-gnome "$@";
+      rc=$?;
+      git reset -- secrets.nix 2>/dev/null || true;
+      exit $rc
+    ' --
 
   dev:
     image: nixos/nix:2.34.7

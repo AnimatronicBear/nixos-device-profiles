@@ -1,11 +1,11 @@
-({ pkgs, lib, config, ... }:
+({ pkgs, lib, config, settings, ... }:
 
 let
-  secrets = import ./secrets.nix;
-  username = secrets.username;
+  secretsFile = if builtins.pathExists ./secrets.nix then ./secrets.nix else ./secrets.nix.example;
+  secrets = import secretsFile;
 in
 {
-  system.stateVersion = "25.11";
+  system.stateVersion = settings.stateVersion;
 
   zramSwap.enable = true;
 
@@ -16,9 +16,9 @@ in
 
   documentation.nixos.enable = false;
 
-  nix.settings.trusted-users = [ username ];
+  nix.settings.trusted-users = [ settings.username ];
 
-  users.users.${username} = {
+  users.users.${settings.username} = {
     initialPassword = secrets.initialPassword;
     openssh.authorizedKeys.keys = [ secrets.authorizedKey ];
     isNormalUser = true;
@@ -27,7 +27,7 @@ in
   };
 
   security.sudo.extraRules = [{
-    users = [ username ];
+    users = [ settings.username ];
     commands = [{ command = "ALL"; options = [ "NOPASSWD" ]; }];
   }];
 
@@ -97,10 +97,7 @@ in
 
   virtualisation.docker.enable = true;
 
-  environment.systemPackages = with pkgs; [
-    git
-    htop
-  ];
+  environment.systemPackages = builtins.map (name: pkgs.${name}) settings.extraSystemPackages;
 
   environment.sessionVariables = {
     MOZ_ENABLE_WAYLAND = "1";
@@ -120,6 +117,7 @@ in
   home-manager = {
     useGlobalPkgs = true;
     useUserPackages = true;
-    users.${username} = import ./home.nix;
+    extraSpecialArgs = { inherit settings; };
+    users.${settings.username} = ./home.nix;
   };
 })

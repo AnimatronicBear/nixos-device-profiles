@@ -1,8 +1,4 @@
-{ lib, pkgs, config, rockchip, buildPlatform, ... }:
-
-let
-  username = (import ../secrets.nix).username;
-in {
+{ lib, pkgs, config, rockchip, buildPlatform, settings, ... }: {
   imports = [ rockchip.nixosModules.dtOverlayPCIeFix ];
   networking.hostName = "PineTab2";
   rockchip.uBoot = rockchip.packages.${buildPlatform}.uBootPineTab2;
@@ -20,10 +16,10 @@ in {
     script = ''
       ${pkgs.mutter}/bin/gdctl set --logical-monitor --primary --monitor=DSI-1 --transform normal
     '';
-    serviceConfig.User = username;
+    serviceConfig.User = settings.username;
     serviceConfig.Type = "oneshot";
     environment = {
-      "DBUS_SESSION_BUS_ADDRESS" = "unix:path=/run/user/${toString config.users.users."${username}".uid}/bus";
+      "DBUS_SESSION_BUS_ADDRESS" = "unix:path=/run/user/${toString config.users.users."${settings.username}".uid}/bus";
     };
   };
 }

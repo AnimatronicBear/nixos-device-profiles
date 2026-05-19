@@ -1,25 +1,16 @@
-{ pkgs, lib, config, ... }:
+{ pkgs, lib, config, settings, ... }:
 
 {
-  home.stateVersion = "25.11";
+  home.stateVersion = settings.stateVersion;
 
-  home.packages = with pkgs; [
-    librewolf
-    ungoogled-chromium
-    vscodium
-  ];
+  home.packages = builtins.map (name: pkgs.${name}) settings.extraUserPackages;
 
-  # -- Git configuration -------------------------------------------------------
-  # Set your name/email and signing key below.
   programs.git = {
     enable = true;
     settings = {
-      user.name = "Your Name";
-      user.email = "your@email.com";
+      user.name = settings.gitUserName;
+      user.email = settings.gitUserEmail;
       init.defaultBranch = "main";
-      # Uncomment to enable commit signing:
-      # commit.gpgsign = true;
-      # tag.gpgsign = true;
     };
     signing = {
       key = null;
