@@ -1,7 +1,0 @@
-{
-  username = "user";
-  initialPassword = "changeme";
-  authorizedKey = "ssh-ed25519 AAAA... your-public-key-here";
-  ssid = "my-network";
-  psk = "my-password";
-}
