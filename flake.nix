@@ -3,6 +3,10 @@
     nixpkgsStable.url = "nixpkgs/nixos-25.11";
     nixpkgs.url = "nixpkgs/nixos-unstable";
     utils.url = "github:numtide/flake-utils";
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     rockchip = {
       url = "github:nabam/nixos-rockchip";
       inputs.utils.follows = "utils";
@@ -11,7 +15,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, rockchip, utils, ... }:
+  outputs = { self, nixpkgs, rockchip, utils, home-manager, ... }:
 
   let
     osConfig = buildPlatform: deviceModule: variant:
@@ -23,6 +27,7 @@
           { nixpkgs.buildPlatform = buildPlatform; }
           rockchip.nixosModules.sdImageRockchip
           rockchip.nixosModules.noZFS
+          home-manager.nixosModules.home-manager
           ./config.nix
           variant
           deviceModule
@@ -109,6 +114,8 @@
     packages.uboot = (osConfig system ./devices/pinebook-pro.nix { }).config.rockchip.uBoot;
     packages.uboot-pinetab2 = (osConfig system ./devices/pinetab2.nix { }).config.rockchip.uBoot;
     packages.default = self.packages.${system}.image-gnome;
+
+    formatter = pkgs.nixfmt-tree;
 
     checks = {
       PineBookPro-gnome = mkCheck "PineBookPro" ./devices/pinebook-pro.nix ./gnome.nix "gnome";

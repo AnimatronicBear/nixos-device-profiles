@@ -15,7 +15,7 @@ in
     initialPassword = secrets.initialPassword;
     openssh.authorizedKeys.keys = [ secrets.authorizedKey ];
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" ];
+    extraGroups = [ "wheel" "networkmanager" "docker" ];
     uid = 1000;
   };
 
@@ -83,9 +83,10 @@ in
 
   security.rtkit.enable = true;
 
+  virtualisation.docker.enable = true;
+
   environment.systemPackages = with pkgs; [
-    firefox
-    chromium
+    git
     htop
   ];
 
@@ -94,10 +95,17 @@ in
   };
 
   nix.settings = {
+    auto-optimise-store = true;
     experimental-features = [ "nix-command" "flakes" ];
     extra-substituters = [ "https://nabam-nixos-rockchip.cachix.org" ];
     extra-trusted-public-keys = [
       "nabam-nixos-rockchip.cachix.org-1:BQDltcnV8GS/G86tdvjLwLFz1WeFqSk7O9yl+DR0AVM"
     ];
+  };
+
+  home-manager = {
+    useGlobalPkgs = true;
+    useUserPackages = true;
+    users.${username} = import ./home.nix;
   };
 })

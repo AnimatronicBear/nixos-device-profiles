@@ -1,55 +1,142 @@
-This is a NixOS definition for the PineBookPro.
+# NixOS for Pine64 Devices
 
-## Initial installation
+NixOS flake for **PineBookPro** (RK3399 laptop) and **PineTab2** (RK3566 tablet).
+Cross-compiled from x86_64 → aarch64-linux.
 
-To create and 'flash' your installation sd card, change your password
-in secrets.nix. If you want to enable remote updates (you probably do),
-also include your public key here. then:
+## Supported configurations
+
+| Device | Desktop | Flake attr | Accel matrix |
+|--------|---------|------------|--------------|
+| PineBookPro | GNOME (default) | `.#PineBookPro` / `.#image-gnome` | (none — no sensor) |
+| PineBookPro | Plasma 6 | `.#PineBookPro-plasma` / `.#image-plasma` | (none — no sensor) |
+| PineBookPro | Phosh | `.#PineBookPro-phosh` | (none — no sensor) |
+| PineTab2 | GNOME | `.#PineTab2` / `.#image-pinetab2-gnome` | `1,0,0; 0,0,1; 0,1,0` |
+| PineTab2 | Plasma 6 | `.#PineTab2-plasma` / `.#image-pinetab2-plasma` | `0,0,-1; -1,0,0; 0,1,0` |
+| PineTab2 | Phosh | `.#PineTab2-phosh` | `1,0,0; 0,0,1; 0,1,0` |
+
+## Before building
+
+Edit `secrets.nix` (tracked with placeholder values — keep your changes local):
 
 ```
+git update-index --skip-worktree secrets.nix   # prevent accidental commits
+```
+
+Set `initialPassword`, `authorizedKey`, `ssid`, `psk`.
+
+## Building an SD card image
+
+```shell
+# PineBookPro GNOME (default)
 nix build
-dd if=result/sd-image/* of=/dev/of/sd/card bs=4M
+
+# PineBookPro Plasma
+nix build .#image-plasma
+
+# PineTab2 GNOME
+nix build .#image-pinetab2-gnome
+
+# PineTab2 Plasma
+nix build .#image-pinetab2-plasma
 ```
 
-## Updating
+Flash the result:
 
-If you configured a public key, to later update it remotely:
-
-```
-nixos-rebuild --flake .#PineBookPro switch --target-host PineBookPro@192.168.188.55 --use-remote-sudo --ask-sudo-password
+```shell
+dd if=result/sd-image/* of=/dev/sdX bs=4M
 ```
 
-If you prefer Plasma to GNOME, use `nix build .#image-plasma` and `.#PineBookPro-plasma`. You may need to manually enable the virtual keyboard.
+## Updating a running system
 
-## Permanent installation
-
-You can do a 'permanent' non-SD install by booting
-(with `SD BOOT` disabled, the default) and dd'ing the
-sd card image onto `/dev/mmcblk0`. This can take an hour
-or so if you do it naively, TODO add example of how to do
-it efficiently here.
-
-## Updating the u-boot bootloader
-
-`nixos-rebuild` only updates the OS itself, not the u-boot bootloader.
-If you want to update the bootloader, pop the sd card into your development machine,
-and:
-
-```
-$ nix build .#uboot --print-out-paths
-$ sudo dd if=/nix/store/your-out-path/u-boot-rockchip.bin of=/dev/your-sd-card conv=fsync,notrunc bs=16M seek=32768 iflag=direct,count_bytes,skip_bytes oflag=direct,seek_bytes
+```shell
+nixos-rebuild --flake .#PineBookPro switch \
+  --target-host user@host \
+  --use-remote-sudo --ask-sudo-password
 ```
 
-(the 32768 here is idbloaderOffset * 512 per https://github.com/nabam/nixos-rockchip/blob/main/modules/sd-card/sd-image-rockchip.nix#L34)
+Substitute `PineTab2` for the tablet variant.
 
-To use this bootloader you need to boot with the [PineTab UART adapter](https://pine64.org/documentation/PineBookPro/Development/UART_adapter/)
-with the `SD BOOT` switch in the `ON` position.
+## Installing to eMMC
 
-To install the new bootloader to the pinebookpro's flash, boot with `SD BOOT` _disabled_ and then:
+Boot from SD and dd the image onto the internal storage:
 
+```shell
+dd if=/dev/zero of=/dev/mmcblk0 bs=1M count=16
+dd if=result/sd-image/*.img of=/dev/mmcblk0 bs=4M conv=fsync
 ```
-scp u-boot-rockchip-spi.bin PineBookPro@192.168.188.55:
-ssh PineBookPro@192.168.188.55
+
+## Updating u-boot
+
+The bootloader is not updated by `nixos-rebuild`. To update it, plug the SD
+card into your dev machine:
+
+```shell
+nix build .#uboot           # PineBookPro
+nix build .#uboot-pinetab2  # PineTab2
+```
+
+Then write u-boot to the SD card:
+
+```shell
+sudo dd if=$(readlink -f result)/u-boot-rockchip.bin of=/dev/sdX \
+  conv=fsync,notrunc bs=16M seek=32768
+```
+
+(32768 = idbloaderOffset × 512, as defined in
+[nixos-rockchip](https://github.com/nabam/nixos-rockchip/blob/main/modules/sd-card/sd-image-rockchip.nix).)
+
+To flash u-boot to the device's SPI flash (PineBookPro only):
+
+```shell
+scp result/u-boot-rockchip-spi.bin user@host:
+ssh user@host
 nix-shell -p mtdutils
 flashcp -v -A u-boot-rockchip-spi.bin /dev/mtd0
 ```
+
+## Key packages
+
+| Package | Where | Notes |
+|---------|-------|-------|
+| `git` | System (`config.nix`) | |
+| `docker` | System (`config.nix`) | User in `docker` group |
+| `librewolf` | User (`home.nix`) | uBlock Origin packaged by default |
+| `ungoogled-chromium` | User (`home.nix`) | |
+| `vscodium` | User (`home.nix`) | Extensions via `pkgs.vscode-extensions` |
+
+User packages and dotfiles are managed by
+[home-manager](https://github.com/nix-community/home-manager) — see
+`home.nix` to configure git signatures, VSCodium extensions, and browser
+settings.
+
+## Binary cache
+
+The flake uses `nabam-nixos-rockchip.cachix.org` for pre-built kernels,
+u-boot, and firmware (configured at both the flake and NixOS system level).
+
+## Checks
+
+```shell
+nix flake check    # eval-only, no kernel compilation
+
+# Individual checks:
+nix build .#checks.x86_64-linux.PineBookPro-gnome
+nix build .#checks.x86_64-linux.PineTab2-plasma
+```
+
+## Code formatting
+
+```shell
+nix fmt    # uses nixfmt-tree
+```
+
+## Quick reference
+
+| Action | Command |
+|--------|---------|
+| Build image (PBP GNOME) | `nix build` |
+| Build image (PT2 GNOME) | `nix build .#image-pinetab2-gnome` |
+| Build u-boot (PBP) | `nix build .#uboot` |
+| Build u-boot (PT2) | `nix build .#uboot-pinetab2` |
+| Run all checks | `nix flake check` |
+| Format Nix files | `nix fmt` |
