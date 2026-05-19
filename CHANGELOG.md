@@ -3,6 +3,7 @@
 ## [unreleased]
 
 ### Added
+- Plan for Qubes OS template qube image output (`plans/qubes-template.md`)
 - Home-manager integration with user package and dotfile management
 - `home.nix` — git signing/config, VSCodium extensions, LibreWolf, ungoogled-chromium
 - Docker daemon enabled, user added to `docker` group
