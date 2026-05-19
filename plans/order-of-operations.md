@@ -2,167 +2,229 @@
 
 ## Plans inventory
 
-| Plan | New flake inputs | Custom kernel? | Paths referenced |
-|------|-----------------|---------------|------------------|
-| `settings-split.md` | None | No | `secrets.nix`, `config.nix`, `devices/*.nix`, `home.nix`, `flake.nix` |
-| `emergentmind-restructure.md` | None | No | All root `.nix` → moved to `hosts/`, `home/`, `lib/`, etc. |
-| `rockpro64.md` | None | No (same kernel as PineBookPro) | `devices/rockpro64.nix`, `flake.nix` |
-| `raspberrypi4.md` | `nixos-hardware` | No (vendor kernel from hardware module) | `devices/rpi4.nix`, `flake.nix` |
-| `librem5.md` | `nixos-hardware` | No (vendor kernel from hardware module) | `devices/librem5.nix`, `flake.nix`, `phosh.nix` |
-| `orangepi5ultra.md` | `gnull/nixos-rk3588` | Vendor kernel from rk3588 flake | `devices/orangepi5ultra.nix`, `flake.nix` |
-| `pinephonepro.md` | None (maybe) | Maybe — megi fork if rockchip flake lacks DT | `devices/pinephonepro.nix`, `flake.nix`, `phosh.nix` |
+| Plan | Flake inputs | Platform | Effort | Depends on |
+|------|-------------|----------|--------|------------|
+| `settings-split.md` | None | All | Small | Nothing |
+| `emergentmind-restructure.md` | None | All | Large | settings-split |
+| `codeberg-ci.md` | None | infra | Medium | restructure (paths) |
+| `rockpro64.md` | None | RK3399 | Tiny | restructure |
+| `x86pc.md` | None (nixos-hardware optional) | x86_64 | Small | restructure |
+| `raspberrypi4.md` | `nixos-hardware` | BCM2711 | Medium | restructure |
+| `librem5.md` | `nixos-hardware` (shared) | i.MX8M | Medium | restructure, settings-split |
+| `orangepi5ultra.md` | `gnull/nixos-rk3588` | RK3588 | Medium | restructure |
+| `qubes-template.md` | evq packages (copied) | x86_64 RPM | Large | restructure |
+| `pinephonepro.md` | None (maybe megi kernel) | RK3399S | Conditional | restructure, settings-split |
 
 ## Cross-plan dependencies
 
 ```
-settings-split.md ──→ emergentmind-restructure.md ──→ rockpro64.md
-                     (moves all paths, lib/, checks.nix)  │
-                           │                              ├──→ raspberrypi4.md (nixos-hardware)
-                           │                              ├──→ librem5.md       (nixos-hardware, same input)
-                           │                              ├──→ orangepi5ultra.md (gnull/nixos-rk3588)
-                           │                              └──→ pinephonepro.md  (maybe custom kernel)
-                           │
-                           └──  phosh.nix fixed (settings-split: no hardcoded ./secrets.nix import)
-                                  │
-                                  ├── needed by librem5.md
-                                  └── needed by pinephonepro.md
+settings-split (username out of secrets; unblocks phosh.nix for Librem5/PPP)
+    │
+    ▼
+emergentmind-restructure (new layout: hosts/, lib/, checks.nix, etc.)
+    │
+    ├──► codeberg-ci (CI paths depend on restructured layout)
+    │
+    ├──► rockpro64 (same RK3399 SoC, no new inputs — trivial validation)
+    │
+    ├──► x86pc (generic x86_64, no new inputs — validates x86_64 path in lib/)
+    │
+    ├──► raspberrypi4 ─┐ (nixos-hardware, one input, two+ devices)
+    ├──► librem5      ─┘
+    │
+    ├──► orangepi5ultra (gnull/nixos-rk3588 input)
+    │
+    ├──► qubes-template (Qubes RPM packaging, x86_64 only)
+    │
+    └──► pinephonepro (conditional: probe rockchip flake for PPP DT first)
 ```
 
 ## Consolidation opportunities
 
-### 1. Flake input: `nixos-hardware` added twice
+### 1. `nixos-hardware` flake input added by multiple plans
 
-Both `raspberrypi4.md` and `librem5.md` add `nixos-hardware` as a flake input.
-These should be **one change**: add the input once, add both device modules in
-the same PR/commit.
+`raspberrypi4.md`, `librem5.md`, and optionally `x86pc.md` (for Framework,
+ThinkPad, etc.) all use `nixos-hardware`. Add it **once**, use it everywhere.
 
 ### 2. Config function explosion
 
-Every device port plan adds a new `*Config` function to `flake.nix`:
+Every platform needs its own `mkSystem` variant. They differ only in system
+arch, specialArgs, and which SD/ISO image module to use:
 
-| Plan | Config function |
-|------|----------------|
-| existing | `osConfig` (rockchip SD image builder) |
-| existing | `installerConfig` (rockchip installer builder) |
-| `raspberrypi4.md` | `rpiConfig` (generic `sdImage`) |
-| `librem5.md` | `imxConfig` (generic `sdImage`) |
-| `orangepi5ultra.md` | `rk3588Config` (rk3588 SD image builder) |
+| Plan | Config function | System | Image module |
+|------|----------------|--------|-------------|
+| Existing (rockchip) | `osConfig` | aarch64 | `sdImageRockchip` |
+| `x86pc.md` | `mkX86Config` | x86_64 | `isoImage` / `sdImage` |
+| `raspberrypi4.md` | `rpiConfig` | aarch64 | generic `sdImage` |
+| `librem5.md` | `imxConfig` | aarch64 | generic `sdImage` |
+| `orangepi5ultra.md` | `rk3588Config` | aarch64 | rk3588 `sdImage` |
 
-After the restructure, these all live in `lib/default.nix`. They share
-most of their structure (modules list) — they differ only in:
-- Which flake's sdImage module is used (rockchip vs. generic vs. rk3588)
-- Which `specialArgs` are passed
+**Consolidate into a single `mkSystem` in `lib/default.nix`:**
 
-Consolidation idea: a single `mkSystem` that takes the SD image module
-and special args as parameters, rather than N separate functions.
-
-### 3. `mkCheck` assertions grow with each device
-
-Every device plan adds a `device == "MyDevice"` branch to `mkCheck` in
-`flake.nix`. After the restructure, this is in `checks.nix`.
-
-The pattern is already repetitive — each branch checks hostName, iio,
-landscape.service, accel matrix, stateVersion. Could be refactored to a
-data-driven approach (a list of device specs with expected properties),
-but that can be deferred.
-
-### 4. `phosh.nix` user fix is needed by two plans
-
-`phosh.nix` currently does `(import ./secrets.nix).username` at the top.
-Both `librem5.md` (step 7) and `pinephonepro.md` (step 7) call out this
-as a blocker. The `settings-split.md` fix resolves it.
-
-**This is a hard prerequisite** — phosh on any new device (Librem 5,
-PinePhone Pro) depends on it. Do settings-split before adding those devices.
-
-### 5. ACCEL_MOUNT_MATRIX appears in three DE modules + two device modules
-
-Currently:
-- `gnome.nix`, `plasma.nix`, `phosh.nix` each set `services.udev.extraHwdb`
-  conditionally (`lib.mkIf config.hardware.sensor.iio.enable`)
-- `devices/pinetab2.nix` adds `landscape.service` for GNOME-specific rotation
-- `devices/pinephonepro.nix` (planned) also has its own ACCEL_MOUNT_MATRIX
-
-Consolidation idea: move ACCEL_MOUNT_MATRIX into the device module
-(each device knows its own sensor orientation), not the DE module.
-The DE only needs to know about direction conventions (GNOME vs. Plasma
-interpret "normal" differently). This is a nice-to-have, not a blocker.
-
-### 6. Kernel packaging for PinePhone Pro
-
-`pinephonepro.md` may need a custom megi kernel package if the
-`nabam/nixos-rockchip` flake doesn't include the PinePhone Pro device tree.
-
-Before doing anything, probe the rockchip flake:
+```nix
+mkSystem = { system, buildPlatform, sdImageModule, specialArgs ? {}, extraModules ? [] }: hostModule: variantModule:
+  nixpkgs.lib.nixosSystem {
+    inherit system;
+    specialArgs = { inherit rockchip buildPlatform; } // specialArgs;
+    modules = [
+      { nixpkgs.hostPlatform = system; }
+      { nixpkgs.buildPlatform = buildPlatform; }
+      sdImageModule or (if system == "x86_64-linux" then [] else [])
+      rockchip.nixosModules.noZFS or (if system != "aarch64-linux" then [])
+      home-manager.nixosModules.home-manager
+      ./hosts/common/core
+      hostModule
+      variantModule
+    ] ++ extraModules;
+  };
 ```
-nix eval github:nabam/nixos-rockchip\#legacyPackages.x86_64-linux.kernel_linux_latest_rockchip_stable.config.system.build.kernel.devicetree
+
+Then each platform becomes a thin wrapper:
+
+```nix
+osConfig = mkSystem {
+  system = "aarch64-linux";
+  sdImageModule = rockchip.nixosModules.sdImageRockchip;
+  specialArgs = { inherit rockchip; };
+};
+mkX86Config = mkSystem {
+  system = "x86_64-linux";
+  sdImageModule = [];  # uses isoImage instead
+};
+rpiConfig = mkSystem {
+  system = "aarch64-linux";
+  sdImageModule = [];  # generic sdImage
+  specialArgs = { inherit nixos-hardware; };
+};
 ```
-to see if `rk3399-pinephone-pro.dtb` is present. If yes, no custom kernel
-needed — PinePhone Pro becomes as simple as RockPro64.
+
+### 3. `mkCheck` assertion table
+
+Every device adds a `device == "X"` branch to `mkCheck`. Refactor to a
+data-driven list in `checks.nix`:
+
+```nix
+deviceSpecs = {
+  PineBookPro = { iio = false; landscape = false; accel = null; stateVersion = "25.11"; };
+  PineTab2    = { iio = true;  landscape = true;  accel = "1, 0, 0; 0, 0, 1; 0, 1, 0"; stateVersion = "25.11"; };
+  RockPro64   = { iio = false; landscape = false; accel = null; stateVersion = "25.11"; };
+  X86Pc       = { iio = false; landscape = false; accel = null; stateVersion = "25.11"; };
+  RPi4        = { iio = false; landscape = false; accel = null; stateVersion = "25.11"; };
+  # ... etc
+};
+```
+
+This eliminates repetitive `if device == ...` chains.
+
+### 4. `phosh.nix` user fix blocks two devices
+
+`phosh.nix` does `(import ./secrets.nix).username` — both `librem5.md` and
+`pinephonepro.md` call this out as a blocker. `settings-split.md` is the
+hard prerequisite. Do `settings-split` before any Phosh device port.
+
+### 5. ACCEL_MOUNT_MATRIX belongs in device modules, not DE modules
+
+Currently `gnome.nix`, `plasma.nix`, `phosh.nix` each set their own matrix
+conditionally. The device knows its sensor orientation; the DE only knows
+which direction convention it uses. Move the matrix to per-device hardware
+configs (`hosts/nixos/*/hardware.nix`), keep only the direction convention
+in the DE module.
+
+### 6. Cross-platform builder caching
+
+| Platform | Binary cache | Status |
+|----------|-------------|--------|
+| aarch64 (rockchip) | `nabam-nixos-rockchip.cachix.org` | Configured but broken (dead code) |
+| aarch64 (RPi4, Librem5) | `cache.nixos.org` | Works automatically |
+| x86_64 (PC, Qubes) | `cache.nixos.org` | Works automatically |
+
+Fix the Cachix config as part of `codeberg-ci.md`.
 
 ## Recommended order of operations
+
+### Phase 0 — Planning (done)
+
+All plans written: `settings-split.md`, `emergentmind-restructure.md`,
+`codeberg-ci.md`, `rockpro64.md`, `x86pc.md`, `raspberrypi4.md`,
+`librem5.md`, `orangepi5ultra.md`, `qubes-template.md`, `pinephonepro.md`.
 
 ### Phase 1 — Infrastructure (no new devices)
 
 ```
 Step 1: settings-split.md
-  Creates settings.nix, moves username out of secrets.nix.
-  Unblocks phosh.nix for later device ports.
-  Updates: config.nix, home.nix, devices/pinetab2.nix, flake.nix
+  Creates settings.nix, moves username/git config/extraPackages out of
+  secrets.nix into a tracked settings file.
+  Unblocks phosh.nix for Librem5 and PinePhonePro.
+  Files: settings.nix (new), secrets.nix (trimmed), config.nix, home.nix,
+         devices/pinetab2.nix, flake.nix, README.md
 
 Step 2: emergentmind-restructure.md
-  Moves files into hosts/, home/, lib/, checks.nix, etc.
+  Flat root files → hosts/, home/, lib/, checks.nix, modules/, overlays/.
   Creates shell.nix, .envrc, justfile for dev workflow.
+  Consolidates osConfig/installerConfig into lib/default.nix.
   ALL subsequent steps use the new paths.
 ```
 
-### Phase 2 — Simple device (same SoC, same flake, no new inputs)
+### Phase 2 — CI + validation (no new flake inputs)
 
 ```
-Step 3: rockpro64.md
-  Same RK3399 SoC as PineBookPro, same kernel, same nabam/nixos-rockchip flake.
-  Adds: hosts/nixos/RockPro64/default.nix + flake.nix entries + checks.nix entry.
-  No new flake inputs. No custom packaging.
-  Easiest addition — validates the new structure before adding complexity.
+Step 3: codeberg-ci.md
+  Woodpecker CI pipelines: eval checks on push, image builds on tag.
+  Fix Cachix config so binary cache actually works.
+  Files: .woodpecker/*.yml, config.nix (Cachix fix)
+
+Step 4: rockpro64.md
+  Same RK3399 SoC as PineBookPro — simplest possible device add.
+  Validates that the emergentmind structure works for new hosts.
+  Files: hosts/nixos/RockPro64/default.nix, flake.nix, checks.nix
+
+Step 5: x86pc.md
+  Generic x86_64 PC — validates x86_64 build path in lib/.
+  ISO installer images, UEFI+BIOS boot, no new flake inputs needed.
+  Files: hosts/nixos/X86Pc/default.nix, flake.nix, checks.nix
+  Parallel with Step 4 (no shared dependencies).
 ```
 
-### Phase 3 — Devices sharing nixos-hardware input
+### Phase 3 — Devices with nixos-hardware
 
 ```
-Step 4: raspberrypi4.md + librem5.md (in one pass)
-  Add nixos-hardware flake input once.
-  Add both device modules:
-    hosts/nixos/RPi4/default.nix
-    hosts/nixos/Librem5/default.nix
-    hosts/nixos/Librem5-devkit/default.nix
-  RPi4 uses nixos-hardware raspberry-pi-4 module.
-  Librem 5 uses nixos-hardware purism-librem-5r4 module.
-  Both use generic sdImage builder (not rockchip).
+Step 6: raspberrypi4.md + librem5.md (one pass)
+  Add nixos-hardware flake input once, add both device modules.
+  RPi4: bcm2711 kernel, GPU firmware, generic sdImage.
+  Librem5 (+ Devkit): i.MX8M kernel/U-Boot from nixos-hardware, Phosh DE.
+  Files: flake.nix, hosts/nixos/{RPi4,Librem5,Librem5-devkit}/default.nix,
+         checks.nix
 ```
 
 ### Phase 4 — Devices with their own flake inputs
 
 ```
-Step 5: orangepi5ultra.md
-  Add gnull/nixos-rk3588 flake input.
-  Add hosts/nixos/OrangePi5Ultra/default.nix.
-  Vendor kernel from rk3588 flake, Mali G610 GPU, 2.5GbE.
-
-Step 6: pinephonepro.md (conditional)
-  Probe nabam/nixos-rockchip for PPP DT first.
-  If DT exists: ~5 lines of code (same effort as RockPro64).
-  If not: package megi kernel in pkgs/kernel-pinephonepro/.
+Step 7: orangepi5ultra.md
+  Add gnull/nixos-rk3588. RK3588 vendor kernel, Mali G610, PCIe NVMe, 2.5GbE.
+  Files: flake.nix, hosts/nixos/OrangePi5Ultra/default.nix, checks.nix
 ```
 
-## What NOT to do
+### Phase 5 — Specialized outputs
 
-- Don't add `mobile-nixos` as a flake input. The analysis in both
-  `pinephonepro.md` and `librem5.md` concludes it's incompatible with
-  the existing infrastructure.
-- Don't add `nixos-hardware` for PineBookPro or PineTab2 — the existing
-  `nabam/nixos-rockchip` + manual config already covers what's needed.
-- Don't create device-specific config functions until after the restructure.
-  The `lib/default.nix` in the restructure plan naturally handles this.
+```
+Step 8: qubes-template.md
+  x86_64 RPM package for Qubes dom0. Qubes guest agent packages/modules
+  sourced from evq/qubes-nixos-template. RPM builder + optional ISO.
+  Files: qubes/pkgs/*, qubes/modules/*, qubes/tools/rpm.nix, qubes/profiles/*,
+         qubes/configs/*, flake.nix
+  Can be done in parallel with Phases 3-4 (different architecture, no shared
+  flake inputs).
+```
+
+### Phase 6 — Conditional / stretch
+
+```
+Step 9: pinephonepro.md (conditional)
+  Probe nabam/nixos-rockchip for PPP device tree first. If present, trivial
+  (~5 lines). If not, package megi kernel in pkgs/kernel-pinephonepro/.
+  Files: hosts/nixos/PinePhonePro/default.nix, flake.nix, checks.nix,
+         (maybe) pkgs/kernel-pinephonepro/
+```
 
 ## Summary dependency graph
 
@@ -172,12 +234,34 @@ settings-split
     ▼
 restructure (emergentmind)
     │
-    ├──► rockpro64 (same SoC, trivial)
+    ├──► codeberg-ci          (CI pipelines, Cachix fix)
     │
-    ├──► raspberrypi4 ─┐ (share nixos-hardware input)
-    ├──► librem5      ─┘
+    ├──► rockpro64            (same RK3399, trivial)
+    ├──► x86pc                (generic x86_64, no new inputs)
+    │       (parallel — independent)
     │
-    ├──► orangepi5ultra (gnull/nixos-rk3588)
+    ├──► raspberrypi4 ─┐     (nixos-hardware, one input)
+    ├──► librem5      ─┘     (reuses same input)
     │
-    └──► pinephonepro (conditional — probe rockchip flake first)
+    ├──► orangepi5ultra       (gnull/nixos-rk3588 input)
+    │
+    ├──► qubes-template       (x86_64 RPM, independent)
+    │       (parallel with Phases 3-4 — different arch)
+    │
+    └──► pinephonepro         (conditional on rockchip flake DT)
 ```
+
+## What NOT to do
+
+- Don't add `mobile-nixos` as a flake input (incompatible module system)
+- Don't add `nixos-hardware` for PineBookPro or PineTab2 (already covered
+  by `nabam/nixos-rockchip` + manual config)
+- Don't create per-device config functions (`rk3588Config`, `rpiConfig`,
+  `imxConfig`, `mkX86Config`) as separate functions — consolidate into
+  one `mkSystem` in `lib/default.nix`
+- Don't add x86_64 PC support before the restructure — the generic config
+  function pattern only makes sense in the new `lib/default.nix`
+- Don't build Qubes template before verifying it works with a minimal x86_64
+  config first (Phase 2, Step 5 validates x86_64 build path)
+- Don't implement `pinephonepro.md` without first probing the rockchip flake
+  for the PPP device tree — it could be trivial
