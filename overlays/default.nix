@@ -1,1 +1,1 @@
-[ ./onnxruntime.nix ]
+[ (import ./onnxruntime.nix) ]
