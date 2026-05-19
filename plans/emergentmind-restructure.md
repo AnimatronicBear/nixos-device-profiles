@@ -204,7 +204,7 @@ rmdir devices/  # if empty
 ## Design decisions to make before implementing
 
 1. **sops-nix vs plain secrets**: Starter uses sops-nix with a separate `nix-secrets` repo
-   (gitignored sibling directory). Current pinetab2-nixos uses `secrets.nix` (gitignored).
+   (gitignored sibling directory). Current nixos-device-profiles uses `secrets.nix` (gitignored).
    Keeping plain `secrets.nix` (moved to `hosts/common/secrets/`) is simpler and avoids
    the sops learning curve. Decision: **keep plain secrets.nix** unless you want sops.
 
