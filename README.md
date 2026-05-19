@@ -3,6 +3,10 @@
 NixOS flake for **PineBookPro** (RK3399 laptop) and **PineTab2** (RK3566 tablet).
 Cross-compiled from x86_64 → aarch64-linux.
 
+Forked from [raboof/pinetab2-nixos](https://codeberg.org/raboof/pinetab2-nixos)
+which originally targeted PineTab2 only. This fork adds PineBookPro support,
+multi-device architecture, and home-manager integration.
+
 ## Supported configurations
 
 | Device | Desktop | Flake attr | Accel matrix |
