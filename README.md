@@ -1,4 +1,4 @@
-This is a NixOS definition for the PineTab 2.
+This is a NixOS definition for the PineBookPro.
 
 ## Initial installation
 
@@ -16,10 +16,10 @@ dd if=result/sd-image/* of=/dev/of/sd/card bs=4M
 If you configured a public key, to later update it remotely:
 
 ```
-nixos-rebuild --flake .#PineTab2 switch --target-host pinetab2@192.168.188.55 --use-remote-sudo --ask-sudo-password
+nixos-rebuild --flake .#PineBookPro switch --target-host PineBookPro@192.168.188.55 --use-remote-sudo --ask-sudo-password
 ```
 
-If you prefer Plasma to GNOME, use `nix build .#image-plasma` and `.#PineTab2-plasma`. You may need to manually enable the virtual keyboard.
+If you prefer Plasma to GNOME, use `nix build .#image-plasma` and `.#PineBookPro-plasma`. You may need to manually enable the virtual keyboard.
 
 ## Permanent installation
 
@@ -42,14 +42,14 @@ $ sudo dd if=/nix/store/your-out-path/u-boot-rockchip.bin of=/dev/your-sd-card c
 
 (the 32768 here is idbloaderOffset * 512 per https://github.com/nabam/nixos-rockchip/blob/main/modules/sd-card/sd-image-rockchip.nix#L34)
 
-To use this bootloader you need to boot with the [PineTab UART adapter](https://pine64.org/documentation/PineTab2/Development/UART_adapter/)
+To use this bootloader you need to boot with the [PineTab UART adapter](https://pine64.org/documentation/PineBookPro/Development/UART_adapter/)
 with the `SD BOOT` switch in the `ON` position.
 
-To install the new bootloader to the pinetab's flash, boot with `SD BOOT` _disabled_ and then:
+To install the new bootloader to the pinebookpro's flash, boot with `SD BOOT` _disabled_ and then:
 
 ```
-scp u-boot-rockchip-spi.bin pinetab2@192.168.188.55:
-ssh pinetab2@192.168.188.55
+scp u-boot-rockchip-spi.bin PineBookPro@192.168.188.55:
+ssh PineBookPro@192.168.188.55
 nix-shell -p mtdutils
 flashcp -v -A u-boot-rockchip-spi.bin /dev/mtd0
 ```
