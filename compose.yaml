@@ -35,6 +35,17 @@ services:
       exit $rc
     ' --
 
+  fmt:
+    image: nixos/nix:2.34.7
+    platform: linux/amd64
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - nix-store:/nix
+    environment:
+      - NIX_CONFIG=experimental-features = nix-command flakes
+    command: sh -c 'git config --global safe.directory /workspace 2>/dev/null; exec nix fmt "$@"' --
+
   dev:
     image: nixos/nix:2.34.7
     platform: linux/amd64
