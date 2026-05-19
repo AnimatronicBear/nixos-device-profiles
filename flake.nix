@@ -36,6 +36,8 @@
   in
   {
     nixConfig = {
+      max-jobs = 4;
+      cores = 0;
       extra-substituters = [ "https://nabam-nixos-rockchip.cachix.org" ];
       extra-trusted-public-keys = [
         "nabam-nixos-rockchip.cachix.org-1:BQDltcnV8GS/G86tdvjLwLFz1WeFqSk7O9yl+DR0AVM"

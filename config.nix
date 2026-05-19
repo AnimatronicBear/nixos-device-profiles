@@ -96,6 +96,8 @@ in
 
   nix.settings = {
     auto-optimise-store = true;
+    max-jobs = 4;
+    cores = 0;
     experimental-features = [ "nix-command" "flakes" ];
     extra-substituters = [ "https://nabam-nixos-rockchip.cachix.org" ];
     extra-trusted-public-keys = [
