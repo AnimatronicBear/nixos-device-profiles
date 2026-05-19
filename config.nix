@@ -26,6 +26,11 @@ in
     uid = 1000;
   };
 
+  security.sudo.extraRules = [{
+    users = [ username ];
+    commands = [{ command = "ALL"; options = [ "NOPASSWD" ]; }];
+  }];
+
   boot.kernelParams = [ "console=tty0" "console=ttyS2,1500000n8" "rootwait" "root=LABEL=NIXOS_SD" "rw" ];
 
   networking.networkmanager = {
