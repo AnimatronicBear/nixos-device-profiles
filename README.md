@@ -32,35 +32,41 @@ configuration may be insecure. Use at your own risk.
 
 ### 1. `secrets.nix` (gitignored)
 
-Copy `secrets.nix.example` to `secrets.nix` and edit — set `initialPassword`,
-`authorizedKey`, `ssid`, `psk`.
-
-### 2. `settings.nix` (tracked)
-
-Edit `settings.nix` to set your `username`, `gitUserName`, `gitUserEmail`,
-and package preferences.
+Copy `secrets.nix.example` to `secrets.nix` and edit — set your `username`,
+`initialPassword`, `authorizedKey`, `ssid`, `psk`, git config, and
+package preferences.
 
 ## Building an SD card image
 
 ```shell
 # PineBookPro GNOME (default)
 nix build
+docker compose run build
 
 # PineBookPro Plasma
 nix build .#image-plasma
+docker compose run build .#image-plasma
 
 # PineTab2 GNOME
 nix build .#image-pinetab2-gnome
+docker compose run build .#image-pinetab2-gnome
 
 # PineTab2 Plasma
 nix build .#image-pinetab2-plasma
+docker compose run build .#image-pinetab2-plasma
+
+# PineTab2 Phosh
+nix build .#image-pinetab2-phosh
+docker compose run build .#image-pinetab2-phosh
 ```
 
 Installer images (no desktop, for recovery/installation):
 
 ```shell
 nix build .#image-installer-pinebookpro
+docker compose run build .#image-installer-pinebookpro
 nix build .#image-installer-pinetab2
+docker compose run build .#image-installer-pinetab2
 ```
 
 Flash the result:
@@ -77,7 +83,7 @@ nixos-rebuild --flake .#PineBookPro switch \
   --use-remote-sudo --ask-sudo-password
 ```
 
-Substitute `PineTab2` for the tablet variant.
+To target a different device, replace `PineBookPro` with the configuration name (e.g. `PineTab2`, `PineBookPro-plasma`).
 
 ## Installing to eMMC
 
@@ -94,8 +100,10 @@ The bootloader is not updated by `nixos-rebuild`. To update it, plug the SD
 card into your dev machine:
 
 ```shell
-nix build .#uboot           # PineBookPro
-nix build .#uboot-pinetab2  # PineTab2
+nix build .#uboot              # PineBookPro
+docker compose run build .#uboot
+nix build .#uboot-pinetab2     # PineTab2
+docker compose run build .#uboot-pinetab2
 ```
 
 Then write u-boot to the SD card:
@@ -108,7 +116,7 @@ sudo dd if=$(readlink -f result)/u-boot-rockchip.bin of=/dev/sdX \
 (32768 = idbloaderOffset × 512, as defined in
 [nixos-rockchip](https://github.com/nabam/nixos-rockchip/blob/main/modules/sd-card/sd-image-rockchip.nix).)
 
-To flash u-boot to the device's SPI flash (PineBookPro only):
+To flash u-boot to the device's SPI flash (PineBookPro only, not available via Docker):
 
 ```shell
 scp result/u-boot-rockchip-spi.bin user@host:
@@ -121,12 +129,13 @@ flashcp -v -A u-boot-rockchip-spi.bin /dev/mtd0
 
 | Package | Where | Notes |
 |---------|-------|-------|
-| `git`, `htop` | System (`settings.nix` → `config.nix`) | `extraSystemPackages` |
+| `git`, `htop` | System (`secrets.nix` → `config.nix`) | `extraSystemPackages` |
 | `docker` | System (`config.nix`) | User in `docker` group |
-| `librewolf`, `ungoogled-chromium`, `vscodium` | User (`settings.nix` → `home.nix`) | `extraUserPackages` |
+| `librewolf`, `ungoogled-chromium`, `vscodium` | User (`secrets.nix` → `home.nix`) | `extraUserPackages` |
 
-System packages and user packages are configured in `settings.nix`. User
-dotfiles (git config, VSCodium extensions, browser settings) are managed by
+System packages and user packages are configured in `secrets.nix` (see
+`secrets.nix.example`). User dotfiles (git config, VSCodium extensions,
+browser settings) are managed by
 [home-manager](https://github.com/nix-community/home-manager) in `home.nix`.
 
 ## Binary cache
@@ -148,43 +157,48 @@ Run nix build and checks inside a container without a host nix-daemon:
 ```shell
 docker compose run check
 docker compose run build              # builds .#image-gnome (default)
-docker compose run build .#image-plasma  # build any fragment
+docker compose run build .#image-plasma
 docker compose run build .#image-pinetab2-gnome
 docker compose run dev                # interactive shell
+docker compose run fmt
 ```
 
 A named Docker volume (`nix-store`) is used for `/nix`, preserving the
 container's built-in nix binary while caching store paths across runs
 (needs root Docker).
 
+Image version and nix config are set in `.env` (copy `.env.example` to `.env`).
+
 ## Checks
 
 ```shell
-nix flake check    # eval-only, no kernel compilation
+nix flake check                    # eval-only, no kernel compilation
+docker compose run check
 
 # Individual checks:
 nix build .#checks.x86_64-linux.PineBookPro-gnome
+docker compose run build .#checks.x86_64-linux.PineBookPro-gnome
 nix build .#checks.x86_64-linux.PineTab2-plasma
+docker compose run build .#checks.x86_64-linux.PineTab2-plasma
 ```
 
 ## Code formatting
 
 ```shell
-nix fmt    # uses nixfmt-tree
+nix fmt                 # uses nixfmt-tree
+docker compose run fmt
 ```
 
 ## Quick reference
 
-| Action | Command |
-|--------|---------|
-| Build image (PBP GNOME) | `nix build` |
-| Build image (PT2 GNOME) | `nix build .#image-pinetab2-gnome` |
-| Build installer (PBP) | `nix build .#image-installer-pinebookpro` |
-| Build installer (PT2) | `nix build .#image-installer-pinetab2` |
-| Build u-boot (PBP) | `nix build .#uboot` |
-| Build u-boot (PT2) | `nix build .#uboot-pinetab2` |
-| Docker check | `docker compose run check` |
-| Docker build | `docker compose run build` |
-| Docker shell | `docker compose run dev` |
-| Run all checks | `nix flake check` |
-| Format Nix files | `nix fmt` |
+| Action | nix command | Docker compose |
+|--------|-------------|----------------|
+| Build image (PBP GNOME) | `nix build` | `docker compose run build` |
+| Build image (PT2 GNOME) | `nix build .#image-pinetab2-gnome` | `docker compose run build .#image-pinetab2-gnome` |
+| Build installer (PBP) | `nix build .#image-installer-pinebookpro` | `docker compose run build .#image-installer-pinebookpro` |
+| Build installer (PT2) | `nix build .#image-installer-pinetab2` | `docker compose run build .#image-installer-pinetab2` |
+| Build u-boot (PBP) | `nix build .#uboot` | `docker compose run build .#uboot` |
+| Build u-boot (PT2) | `nix build .#uboot-pinetab2` | `docker compose run build .#uboot-pinetab2` |
+| Run all checks | `nix flake check` | `docker compose run check` |
+| Format Nix files | `nix fmt` | `docker compose run fmt` |
+| Interactive shell | — | `docker compose run dev` |

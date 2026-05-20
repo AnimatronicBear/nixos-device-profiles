@@ -1,61 +1,46 @@
 services:
   check:
-    image: nixos/nix:2.34.7
+    image: nixos/nix:${NIX_IMAGE_VERSION}
     platform: linux/amd64
     working_dir: /workspace
     volumes:
       - .:/workspace
       - nix-store:/nix
     environment:
-      - NIX_CONFIG=experimental-features = nix-command flakes
-    command: sh -c '
-      git config --global safe.directory /workspace 2>/dev/null;
-      [ -f secrets.nix ] && git add -f secrets.nix;
-      nix flake check "$@";
-      rc=$?;
-      git reset -- secrets.nix 2>/dev/null || true;
-      exit $rc
-    ' --
+      - NIX_CONFIG=${NIX_CONFIG:-experimental-features = nix-command flakes}
+    command: sh -c './scripts/check.sh "$@"' --
 
   build:
-    image: nixos/nix:2.34.7
+    image: nixos/nix:${NIX_IMAGE_VERSION}
     platform: linux/amd64
     working_dir: /workspace
     volumes:
       - .:/workspace
       - nix-store:/nix
     environment:
-      - NIX_CONFIG=experimental-features = nix-command flakes
-    command: sh -c '
-      git config --global safe.directory /workspace 2>/dev/null;
-      [ -f secrets.nix ] && git add -f secrets.nix;
-      if [ $# -eq 0 ]; then set -- .#image-gnome; fi;
-      nix build "$@";
-      rc=$?;
-      git reset -- secrets.nix 2>/dev/null || true;
-      exit $rc
-    ' --
+      - NIX_CONFIG=${NIX_CONFIG:-experimental-features = nix-command flakes}
+    command: sh -c './scripts/build.sh "$@"' --
 
   fmt:
-    image: nixos/nix:2.34.7
+    image: nixos/nix:${NIX_IMAGE_VERSION}
     platform: linux/amd64
     working_dir: /workspace
     volumes:
       - .:/workspace
       - nix-store:/nix
     environment:
-      - NIX_CONFIG=experimental-features = nix-command flakes
+      - NIX_CONFIG=${NIX_CONFIG:-experimental-features = nix-command flakes}
     command: sh -c 'git config --global safe.directory /workspace 2>/dev/null; exec nix fmt "$@"' --
 
   dev:
-    image: nixos/nix:2.34.7
+    image: nixos/nix:${NIX_IMAGE_VERSION}
     platform: linux/amd64
     working_dir: /workspace
     volumes:
       - .:/workspace
       - nix-store:/nix
     environment:
-      - NIX_CONFIG=experimental-features = nix-command flakes
+      - NIX_CONFIG=${NIX_CONFIG:-experimental-features = nix-command flakes}
     stdin_open: true
     tty: true
 

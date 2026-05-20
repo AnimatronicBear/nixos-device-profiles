@@ -57,6 +57,21 @@
 ### Fixed
 - `compose.yaml` — `build` service now accepts a flake fragment argument instead of hardcoding `.#image-gnome`
 
+### Changed
+- `settings.nix` and `secrets.nix` — merged into a single gitignored `secrets.nix`; `secrets.nix.example` is the tracked template (review feedback)
+- `compose.yaml` — extracted inline shell commands to `scripts/build.sh` and `scripts/check.sh` for readability; image version is now an env var from `.env` (review feedback)
+- ACCEL_MOUNT_MATRIX — moved from `gnome.nix`, `phosh.nix`, `plasma.nix` to `devices/pinetab2.nix` with per-desktop conditional (review feedback: PineTab2-specific)
+- `flake.nix` — moved check infrastructure (assertions, `mkCheck`) to `checks.nix` (review feedback)
+- `phosh.nix` — uses `settings` from `specialArgs` instead of directly importing `secrets.nix`
+- `README.md` — shows Docker compose counterparts alongside nix commands; updated for merged settings/secrets (review feedback)
+- `plans/` — moved to `ab/chore/device-plans` branch (review feedback: not in this PR scope)
+
+### Added
+- `checks.nix` — extracted check infrastructure from `flake.nix`
+- `scripts/build.sh`, `scripts/check.sh` — extracted from `compose.yaml`
+- `overlays/README.md` — documents the purpose of each overlay (review feedback)
+- `.env.example` — template for Docker compose environment variables
+
 ---
 
 ## [fork] 2025 — PineBookPro adaptation

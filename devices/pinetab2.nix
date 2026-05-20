@@ -8,6 +8,18 @@
   hardware.sensor.iio.enable = true;
   networking.networkmanager.wifi.powersave = false;
 
+  # ACCEL_MOUNT_MATRIX per desktop — the SC7A20 accelerometer orientation
+  # differs from the display panel normal depending on the compositor.
+  # https://github.com/systemd/systemd/pull/35304#issuecomment-3855146191
+  services.udev.extraHwdb = ''
+    sensor:modalias:*sc7a20:*
+      ACCEL_MOUNT_MATRIX=${
+        if config.services.desktopManager.gnome.enable then "1, 0, 0; 0, 0, 1; 0, 1, 0"
+        else if config.services.desktopManager.plasma6.enable then "0, 0, -1; -1, 0, 0; 0, 1, 0"
+        else "1, 0, 0; 0, 0, 1; 0, 1, 0"
+      }
+  '';
+
   # Keyboard dock orientation correction (GNOME-specific)
   services.udev.extraRules = lib.mkIf config.services.desktopManager.gnome.enable ''
     ACTION=="add", SUBSYSTEM=="usb", ATTRS{idVendor}=="1018", ATTRS{idProduct}=="1006", ENV{SYSTEMD_WANTS}+="landscape.service", TAG+="systemd"
