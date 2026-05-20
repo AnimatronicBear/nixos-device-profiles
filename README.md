@@ -30,9 +30,9 @@ configuration may be insecure. Use at your own risk.
 
 ## Before building
 
-### 1. `secrets.nix` (gitignored)
+### 1. `settings.nix` (gitignored)
 
-Copy `secrets.nix.example` to `secrets.nix` and edit — set your `username`,
+Copy `settings.nix.example` to `settings.nix` and edit — set your `username`,
 `initialPassword`, `authorizedKey`, `ssid`, `psk`, git config, and
 package preferences.
 
@@ -129,12 +129,12 @@ flashcp -v -A u-boot-rockchip-spi.bin /dev/mtd0
 
 | Package | Where | Notes |
 |---------|-------|-------|
-| `git`, `htop` | System (`secrets.nix` → `config.nix`) | `extraSystemPackages` |
+| `git`, `htop` | System (`settings.nix` → `config.nix`) | `extraSystemPackages` |
 | `docker` | System (`config.nix`) | User in `docker` group |
-| `librewolf`, `ungoogled-chromium`, `vscodium` | User (`secrets.nix` → `home.nix`) | `extraUserPackages` |
+| `librewolf`, `ungoogled-chromium`, `vscodium` | User (`settings.nix` → `home.nix`) | `extraUserPackages` |
 
-System packages and user packages are configured in `secrets.nix` (see
-`secrets.nix.example`). User dotfiles (git config, VSCodium extensions,
+System packages and user packages are configured in `settings.nix` (see
+`settings.nix.example`). User dotfiles (git config, VSCodium extensions,
 browser settings) are managed by
 [home-manager](https://github.com/nix-community/home-manager) in `home.nix`.
 

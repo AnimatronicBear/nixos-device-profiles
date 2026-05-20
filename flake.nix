@@ -18,8 +18,8 @@
   outputs = { self, nixpkgs, rockchip, utils, home-manager, ... }:
 
   let
-    secretsFile = if builtins.pathExists ./secrets.nix then ./secrets.nix else ./secrets.nix.example;
-    settings = import secretsFile;
+    settingsFile = if builtins.pathExists ./settings.nix then ./settings.nix else ./settings.nix.example;
+    settings = import settingsFile;
     overlayModule = { config, lib, ... }: {
       nixpkgs.overlays = import ./overlays;
     };

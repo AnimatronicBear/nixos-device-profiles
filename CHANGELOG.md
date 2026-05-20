@@ -58,7 +58,7 @@
 - `compose.yaml` — `build` service now accepts a flake fragment argument instead of hardcoding `.#image-gnome`
 
 ### Changed
-- `settings.nix` and `secrets.nix` — merged into a single gitignored `secrets.nix`; `secrets.nix.example` is the tracked template (review feedback)
+- `settings.nix` and `secrets.nix` — merged into a single gitignored `settings.nix`; `settings.nix.example` is the tracked template (review feedback)
 - `compose.yaml` — extracted inline shell commands to `scripts/build.sh` and `scripts/check.sh` for readability; image version is now an env var from `.env` (review feedback)
 - ACCEL_MOUNT_MATRIX — moved from `gnome.nix`, `phosh.nix`, `plasma.nix` to `devices/pinetab2.nix` with per-desktop conditional (review feedback: PineTab2-specific)
 - `flake.nix` — moved check infrastructure (assertions, `mkCheck`) to `checks.nix` (review feedback)
