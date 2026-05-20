@@ -1,24 +1,35 @@
-({ pkgs, lib, config, ... }:
+({ pkgs, lib, config, settings, ... }:
 
 let
-  hostname = "PineTab2";
-  secrets = import ./secrets.nix;
-  username = secrets.username;
+  secretsFile = if builtins.pathExists ./settings.nix then ./settings.nix else ./settings.nix.example;
+  secrets = import secretsFile;
 in
 {
-  system.stateVersion = "25.11";
+  system.stateVersion = settings.stateVersion;
+
+  zramSwap.enable = true;
+
+  # CVE-2026-31431 (Copy Fail) mitigation — algif_aead allows local
+  # privilege escalation on kernels 4.14–6.19.12. Blacklist the module
+  # until the kernel can be updated with the upstream fix.
+  boot.blacklistedKernelModules = [ "algif_aead" ];
 
   documentation.nixos.enable = false;
 
-  nix.settings.trusted-users = [ username ];
+  nix.settings.trusted-users = [ settings.username ];
 
-  users.users.${username} = {
+  users.users.${settings.username} = {
     initialPassword = secrets.initialPassword;
     openssh.authorizedKeys.keys = [ secrets.authorizedKey ];
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" ];
+    extraGroups = [ "wheel" "networkmanager" "docker" ];
     uid = 1000;
   };
+
+  security.sudo.extraRules = [{
+    users = [ settings.username ];
+    commands = [{ command = "ALL"; options = [ "NOPASSWD" ]; }];
+  }];
 
   boot.kernelParams = [ "console=tty0" "console=ttyS2,1500000n8" "rootwait" "root=LABEL=NIXOS_SD" "rw" ];
 
@@ -26,7 +37,7 @@ in
     enable = true;
     # bes2600 powersave causes wifi stability issues, dmesg:
     # bes2600_wlan mmc2:0001:1: bes2600_pwr_enter_lp_mode, wait pm ind timeout
-    wifi.powersave = false;
+    # wifi.powersave = false;
     ensureProfiles.profiles."${secrets.ssid}" = {
       connection = {
         id = secrets.ssid;
@@ -53,7 +64,6 @@ in
       };
    };
   };
-  hardware.sensor.iio.enable = true;
 
   services.openssh = {
     enable = builtins.stringLength secrets.authorizedKey > 0;
@@ -85,18 +95,29 @@ in
 
   security.rtkit.enable = true;
 
-  environment.systemPackages = with pkgs; [
-    firefox
-    chromium
-    htop
-  ];
+  virtualisation.docker.enable = true;
+
+  environment.systemPackages = builtins.map (name: pkgs.${name}) settings.extraSystemPackages;
 
   environment.sessionVariables = {
     MOZ_ENABLE_WAYLAND = "1";
   };
 
-  networking.hostName = "${hostname}";
   nix.settings = {
+    auto-optimise-store = true;
+    max-jobs = 4;
+    cores = 0;
     experimental-features = [ "nix-command" "flakes" ];
+    extra-substituters = [ "https://nabam-nixos-rockchip.cachix.org" ];
+    extra-trusted-public-keys = [
+      "nabam-nixos-rockchip.cachix.org-1:BQDltcnV8GS/G86tdvjLwLFz1WeFqSk7O9yl+DR0AVM"
+    ];
+  };
+
+  home-manager = {
+    useGlobalPkgs = true;
+    useUserPackages = true;
+    extraSpecialArgs = { inherit settings; };
+    users.${settings.username} = ./home.nix;
   };
 })
