@@ -1,5 +1,25 @@
 {
   "nodes": {
+    "home-manager": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1779157263,
+        "narHash": "sha256-VbiyZkRf8/qr7ObmlyfOHJsNAW5tyZ4MB1+cUwAwdrw=",
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "rev": "866412a19866b4a8e32d2306a118040afa2b840c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1777578337,
@@ -17,11 +37,11 @@
     },
     "nixpkgsStable": {
       "locked": {
-        "lastModified": 1770464364,
-        "narHash": "sha256-z5NJPSBwsLf/OfD8WTmh79tlSU8XgIbwmk6qB1/TFzY=",
+        "lastModified": 1778737229,
+        "narHash": "sha256-6xWoytx8jFW4PF1GjRm/i/53trbpKGfz6zjzQGBr4cI=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "23d72dabcb3b12469f57b37170fcbc1789bd7457",
+        "rev": "d7a713c0b7e47c908258e71cba7a2d77cc8d71d5",
         "type": "github"
       },
       "original": {
@@ -43,22 +63,22 @@
         ]
       },
       "locked": {
-        "lastModified": 1778273074,
-        "narHash": "sha256-gPbn0KjsgS2cJa/ENSMtjN0h8dIEy+2N6g8tw9915pM=",
-        "owner": "raboof",
+        "lastModified": 1778778839,
+        "narHash": "sha256-r+I+PcldyvHACaGCT5MJQ3cC8eKa3rO1aDgj9ydSUt0=",
+        "owner": "nabam",
         "repo": "nixos-rockchip",
-        "rev": "2aab433a41cc9ba862ae73012acdd2eec3547667",
+        "rev": "cbbcbe6ab147b86c4cc316d5ea40d089aceb8456",
         "type": "github"
       },
       "original": {
-        "owner": "raboof",
-        "ref": "pinetab-linux-7.0",
+        "owner": "nabam",
         "repo": "nixos-rockchip",
         "type": "github"
       }
     },
     "root": {
       "inputs": {
+        "home-manager": "home-manager",
         "nixpkgs": "nixpkgs",
         "nixpkgsStable": "nixpkgsStable",
         "rockchip": "rockchip",

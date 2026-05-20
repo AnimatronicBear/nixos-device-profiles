@@ -1,0 +1,12 @@
+{
+  username = "user";
+  stateVersion = "25.11";
+  gitUserName = "Your Name";
+  gitUserEmail = "your@email.com";
+  extraSystemPackages = [ "git" "htop" ];
+  extraUserPackages = [ "librewolf" "ungoogled-chromium" "vscodium" ];
+  initialPassword = "changeme";
+  authorizedKey = "ssh-ed25519 AAAA... your-public-key-here";
+  ssid = "my-network";
+  psk = "my-password";
+}
