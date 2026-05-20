@@ -147,8 +147,10 @@ Run nix build and checks inside a container without a host nix-daemon:
 
 ```shell
 docker compose run check
-docker compose run build
-docker compose run dev    # interactive shell
+docker compose run build              # builds .#image-gnome (default)
+docker compose run build .#image-plasma  # build any fragment
+docker compose run build .#image-pinetab2-gnome
+docker compose run dev                # interactive shell
 ```
 
 A named Docker volume (`nix-store`) is used for `/nix`, preserving the

@@ -54,6 +54,9 @@
 - `flake.lock` — fixed `lastModified` mismatch for `nixpkgsStable` input that broke `nix flake check`
 - `flake.nix` — added missing `home-manager` module to `installerConfig` (option not found error)
 
+### Fixed
+- `compose.yaml` — `build` service now accepts a flake fragment argument instead of hardcoding `.#image-gnome`
+
 ---
 
 ## [fork] 2025 — PineBookPro adaptation
