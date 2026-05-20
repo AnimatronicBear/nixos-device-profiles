@@ -8,7 +8,7 @@ services:
       - nix-store:/nix
     environment:
       - NIX_CONFIG=${NIX_CONFIG:-experimental-features = nix-command flakes}
-    command: sh -c './scripts/check.sh "$@"' --
+    entrypoint: ./scripts/check.sh
 
   build:
     image: nixos/nix:${NIX_IMAGE_VERSION}
@@ -19,7 +19,8 @@ services:
       - nix-store:/nix
     environment:
       - NIX_CONFIG=${NIX_CONFIG:-experimental-features = nix-command flakes}
-    command: sh -c './scripts/build.sh "$@"' --
+    entrypoint: ./scripts/build.sh
+    command: .#image-gnome
 
   fmt:
     image: nixos/nix:${NIX_IMAGE_VERSION}

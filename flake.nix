@@ -24,8 +24,6 @@
       nixpkgs.overlays = import ./overlays;
     };
 
-    checks = import ./checks.nix { inherit lib pkgs system osConfig; };
-
     osConfig = buildPlatform: deviceModule: variant:
       nixpkgs.lib.nixosSystem {
         system = "aarch64-linux";
@@ -78,6 +76,7 @@
   } // utils.lib.eachDefaultSystem (system: let
     pkgs = nixpkgs.legacyPackages.${system};
     lib = nixpkgs.lib;
+    checks = import ./checks.nix { inherit lib pkgs system osConfig; };
   in {
     packages.image-gnome = (osConfig system ./devices/pinebook-pro.nix ./gnome.nix).config.system.build.sdImage;
     packages.image-plasma = (osConfig system ./devices/pinebook-pro.nix ./plasma.nix).config.system.build.sdImage;
