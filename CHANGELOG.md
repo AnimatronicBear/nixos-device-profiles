@@ -2,6 +2,10 @@
 
 ## [unreleased]
 
+### Changed
+- `flake.nix`, `compose.yaml` — added `cache.nixos.org` to `extra-substituters` with trusted public key for x86_64 binary cache substitution
+- `.env.example` — removed `NIX_CONFIG` (now hardcoded in `compose.yaml`)
+
 ### Fixed
 - `xdg-desktop-portal-1.20.4` integration tests (`dynamiclauncher`, `notification/sound_fd`) failing during x86 PC installer build — added overlay in `devices/x86pc.nix` to disable tests (they need D-Bus/portal services not present in the sandbox)
 

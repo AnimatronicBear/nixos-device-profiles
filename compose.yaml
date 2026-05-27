@@ -7,7 +7,10 @@ services:
       - .:/workspace
       - nix-store:/nix
     environment:
-      - NIX_CONFIG=${NIX_CONFIG:-experimental-features = nix-command flakes}
+      NIX_CONFIG: |
+        experimental-features = nix-command flakes
+        extra-trusted-substituters = https://cache.nixos.org
+        extra-trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
     entrypoint: ./scripts/check.sh
 
   build:
@@ -18,7 +21,10 @@ services:
       - .:/workspace
       - nix-store:/nix
     environment:
-      - NIX_CONFIG=${NIX_CONFIG:-experimental-features = nix-command flakes}
+      NIX_CONFIG: |
+        experimental-features = nix-command flakes
+        extra-trusted-substituters = https://cache.nixos.org
+        extra-trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
     entrypoint: ./scripts/build.sh
     command: .#image-gnome
 
@@ -30,7 +36,10 @@ services:
       - .:/workspace
       - nix-store:/nix
     environment:
-      - NIX_CONFIG=${NIX_CONFIG:-experimental-features = nix-command flakes}
+      NIX_CONFIG: |
+        experimental-features = nix-command flakes
+        extra-trusted-substituters = https://cache.nixos.org
+        extra-trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
     command: sh -c 'git config --global safe.directory /workspace 2>/dev/null; exec nix fmt "$@"' --
 
   dev:
@@ -41,7 +50,10 @@ services:
       - .:/workspace
       - nix-store:/nix
     environment:
-      - NIX_CONFIG=${NIX_CONFIG:-experimental-features = nix-command flakes}
+      NIX_CONFIG: |
+        experimental-features = nix-command flakes
+        extra-trusted-substituters = https://cache.nixos.org
+        extra-trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
     stdin_open: true
     tty: true
 
