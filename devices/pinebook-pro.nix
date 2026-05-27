@@ -7,6 +7,7 @@
   ...
 }:
 {
+  imports = [ rockchip.nixosModules.noZFS ];
   networking.hostName = "PineBookPro";
   rockchip.uBoot = rockchip.packages.${buildPlatform}.uBootPinebookPro;
   boot.kernelPackages = rockchip.legacyPackages.${buildPlatform}.kernel_linux_latest_rockchip_stable;

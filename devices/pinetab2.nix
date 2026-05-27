@@ -8,7 +8,10 @@
   ...
 }:
 {
-  imports = [ rockchip.nixosModules.dtOverlayPCIeFix ];
+  imports = [
+    rockchip.nixosModules.dtOverlayPCIeFix
+    rockchip.nixosModules.noZFS
+  ];
   networking.hostName = "PineTab2";
   rockchip.uBoot = rockchip.packages.${buildPlatform}.uBootPineTab2;
   boot.kernelPackages = rockchip.legacyPackages.${buildPlatform}.kernel_linux_6_18_pinetab_stable;

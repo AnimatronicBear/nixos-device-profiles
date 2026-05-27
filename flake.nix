@@ -45,7 +45,6 @@
             { nixpkgs.hostPlatform = "aarch64-linux"; }
             { nixpkgs.buildPlatform = buildPlatform; }
             rockchip.nixosModules.sdImageRockchip
-            rockchip.nixosModules.noZFS
             home-manager.nixosModules.home-manager
             ./config.nix
             variant
@@ -63,7 +62,6 @@
             { nixpkgs.hostPlatform = "aarch64-linux"; }
             { nixpkgs.buildPlatform = buildPlatform; }
             rockchip.nixosModules.sdImageRockchipInstaller
-            rockchip.nixosModules.noZFS
             home-manager.nixosModules.home-manager
             ./config.nix
             deviceModule
@@ -81,12 +79,6 @@
             home-manager.nixosModules.home-manager
             ./config.nix
             ./devices/x86pc.nix
-            (
-              { modulesPath, ... }:
-              {
-                imports = [ "${modulesPath}/installer/cd-dvd/iso-image.nix" ];
-              }
-            )
             variant
           ];
         };
@@ -132,31 +124,20 @@
             installerConfigX86
             ;
         };
+        myPackages = import ./packages.nix {
+          inherit
+            lib
+            pkgs
+            system
+            osConfigAarch64
+            installerConfigAarch64
+            installerConfigX86
+            ;
+        };
       in
       {
-        packages.image-gnome =
-          (osConfigAarch64 system ./devices/pinebook-pro.nix ./gnome.nix).config.system.build.sdImage;
-        packages.image-plasma =
-          (osConfigAarch64 system ./devices/pinebook-pro.nix ./plasma.nix).config.system.build.sdImage;
-        packages.image-pinetab2-gnome =
-          (osConfigAarch64 system ./devices/pinetab2.nix ./gnome.nix).config.system.build.sdImage;
-        packages.image-pinetab2-plasma =
-          (osConfigAarch64 system ./devices/pinetab2.nix ./plasma.nix).config.system.build.sdImage;
-        packages.uboot = (osConfigAarch64 system ./devices/pinebook-pro.nix { }).config.rockchip.uBoot;
-        packages.uboot-pinetab2 = (osConfigAarch64 system ./devices/pinetab2.nix { }).config.rockchip.uBoot;
-        packages.image-installer-pinebookpro =
-          (installerConfigAarch64 system ./devices/pinebook-pro.nix).config.system.build.sdImage;
-        packages.image-installer-pinetab2 =
-          (installerConfigAarch64 system ./devices/pinetab2.nix).config.system.build.sdImage;
-        packages.image-installer-x86pc = (installerConfigX86 { }).config.system.build.isoImage;
-        packages.image-installer-x86pc-gnome =
-          (installerConfigX86 ./gnome.nix).config.system.build.isoImage;
-        packages.image-installer-x86pc-plasma =
-          (installerConfigX86 ./plasma.nix).config.system.build.isoImage;
-        packages.default = self.packages.${system}.image-gnome;
-
+        packages = myPackages;
         formatter = pkgs.nixfmt-tree;
-
         checks = checks;
       }
     );
