@@ -2,6 +2,9 @@
 
 ## [unreleased]
 
+### Fixed
+- `libqmi` build failure during cross-compilation — added `overlays/libqmi.nix` to disable GTK documentation generation (`-Dgtk_doc=false`)
+
 ### Added
 - `settings.nix` — tracked user preferences (username, stateVersion, git config, extra packages)
 - `compose.yaml` — `git add -f secrets.nix` before nix commands to allow untracked secrets in Docker builds
