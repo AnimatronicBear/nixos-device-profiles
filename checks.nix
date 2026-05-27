@@ -2,7 +2,7 @@
   lib,
   pkgs,
   system,
-  osConfig,
+  osConfigAarch64,
   installerConfigX86,
 }:
 
@@ -33,7 +33,7 @@ let
   mkCheck =
     device: deviceModule: desktopFile: desktopName:
     let
-      cfg = (osConfig system deviceModule desktopFile).config;
+      cfg = (osConfigAarch64 system deviceModule desktopFile).config;
       hwdb = cfg.services.udev.extraHwdb or "";
       accelMatrices = {
         gnome = "1, 0, 0; 0, 0, 1; 0, 1, 0";

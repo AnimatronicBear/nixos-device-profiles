@@ -35,7 +35,7 @@
           nixpkgs.overlays = import ./overlays;
         };
 
-      osConfig =
+      osConfigAarch64 =
         buildPlatform: deviceModule: variant:
         nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
@@ -53,7 +53,7 @@
           ];
         };
 
-      installerConfig =
+      installerConfigAarch64 =
         buildPlatform: deviceModule:
         nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
@@ -101,16 +101,22 @@
         ];
       };
 
-      nixosConfigurations.PineBookPro = osConfig "x86_64-linux" ./devices/pinebook-pro.nix ./gnome.nix;
+      nixosConfigurations.PineBookPro =
+        osConfigAarch64 "x86_64-linux" ./devices/pinebook-pro.nix
+          ./gnome.nix;
       nixosConfigurations.PineBookPro-plasma =
-        osConfig "x86_64-linux" ./devices/pinebook-pro.nix
+        osConfigAarch64 "x86_64-linux" ./devices/pinebook-pro.nix
           ./plasma.nix;
       nixosConfigurations.PineBookPro-phosh =
-        osConfig "x86_64-linux" ./devices/pinebook-pro.nix
+        osConfigAarch64 "x86_64-linux" ./devices/pinebook-pro.nix
           ./phosh.nix;
-      nixosConfigurations.PineTab2 = osConfig "x86_64-linux" ./devices/pinetab2.nix ./gnome.nix;
-      nixosConfigurations.PineTab2-plasma = osConfig "x86_64-linux" ./devices/pinetab2.nix ./plasma.nix;
-      nixosConfigurations.PineTab2-phosh = osConfig "x86_64-linux" ./devices/pinetab2.nix ./phosh.nix;
+      nixosConfigurations.PineTab2 = osConfigAarch64 "x86_64-linux" ./devices/pinetab2.nix ./gnome.nix;
+      nixosConfigurations.PineTab2-plasma =
+        osConfigAarch64 "x86_64-linux" ./devices/pinetab2.nix
+          ./plasma.nix;
+      nixosConfigurations.PineTab2-phosh =
+        osConfigAarch64 "x86_64-linux" ./devices/pinetab2.nix
+          ./phosh.nix;
     }
     // utils.lib.eachDefaultSystem (
       system:
@@ -122,26 +128,26 @@
             lib
             pkgs
             system
-            osConfig
+            osConfigAarch64
             installerConfigX86
             ;
         };
       in
       {
         packages.image-gnome =
-          (osConfig system ./devices/pinebook-pro.nix ./gnome.nix).config.system.build.sdImage;
+          (osConfigAarch64 system ./devices/pinebook-pro.nix ./gnome.nix).config.system.build.sdImage;
         packages.image-plasma =
-          (osConfig system ./devices/pinebook-pro.nix ./plasma.nix).config.system.build.sdImage;
+          (osConfigAarch64 system ./devices/pinebook-pro.nix ./plasma.nix).config.system.build.sdImage;
         packages.image-pinetab2-gnome =
-          (osConfig system ./devices/pinetab2.nix ./gnome.nix).config.system.build.sdImage;
+          (osConfigAarch64 system ./devices/pinetab2.nix ./gnome.nix).config.system.build.sdImage;
         packages.image-pinetab2-plasma =
-          (osConfig system ./devices/pinetab2.nix ./plasma.nix).config.system.build.sdImage;
-        packages.uboot = (osConfig system ./devices/pinebook-pro.nix { }).config.rockchip.uBoot;
-        packages.uboot-pinetab2 = (osConfig system ./devices/pinetab2.nix { }).config.rockchip.uBoot;
+          (osConfigAarch64 system ./devices/pinetab2.nix ./plasma.nix).config.system.build.sdImage;
+        packages.uboot = (osConfigAarch64 system ./devices/pinebook-pro.nix { }).config.rockchip.uBoot;
+        packages.uboot-pinetab2 = (osConfigAarch64 system ./devices/pinetab2.nix { }).config.rockchip.uBoot;
         packages.image-installer-pinebookpro =
-          (installerConfig system ./devices/pinebook-pro.nix).config.system.build.sdImage;
+          (installerConfigAarch64 system ./devices/pinebook-pro.nix).config.system.build.sdImage;
         packages.image-installer-pinetab2 =
-          (installerConfig system ./devices/pinetab2.nix).config.system.build.sdImage;
+          (installerConfigAarch64 system ./devices/pinetab2.nix).config.system.build.sdImage;
         packages.image-installer-x86pc = (installerConfigX86 { }).config.system.build.isoImage;
         packages.image-installer-x86pc-gnome =
           (installerConfigX86 ./gnome.nix).config.system.build.isoImage;
