@@ -5,6 +5,7 @@
   gitUserEmail = "your@email.com";
   extraSystemPackages = [ "git" "htop" ];
   extraUserPackages = [ "librewolf" "ungoogled-chromium" "vscodium" ];
+  hostName = "x86pc";
   initialPassword = "changeme";
   authorizedKey = "ssh-ed25519 AAAA... your-public-key-here";
   ssid = "my-network";

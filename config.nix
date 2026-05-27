@@ -14,6 +14,8 @@
   {
     system.stateVersion = settings.stateVersion;
 
+    networking.hostName = lib.mkDefault settings.hostName;
+
     zramSwap.enable = true;
 
     # CVE-2026-31431 (Copy Fail) mitigation — algif_aead allows local
