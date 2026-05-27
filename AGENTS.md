@@ -4,13 +4,18 @@ Cross-project AI rules are in `~/.config/opencode/rules.md`.
 
 ## What this is
 
-NixOS flake for **PineBookPro** (RK3399 laptop). Cross-compiled from x86_64 → aarch64-linux. Three desktop variants:
+NixOS flake for **PineBookPro** (RK3399 laptop), **PineTab2** (RK3566 tablet),
+and **x86_64 PC installer ISOs**. ARM targets cross-compiled from x86_64 → aarch64-linux.
+x86_64 installer ISOs built natively.
 
 | Flake attr            | Desktop | Display manager | Accel matrix                   |
 |-----------------------|---------|-----------------|--------------------------------|
 | `.#PineBookPro` / `.#image-gnome` | GNOME (default) | GDM  | `1,0,0; 0,0,1; 0,1,0` |
 | `.#PineBookPro-plasma` / `.#image-plasma` | Plasma 6 | SDDM (Wayland) | `0,0,-1; -1,0,0; 0,1,0` |
 | `.#PineBookPro-phosh` | Phosh   | phosh           | `1,0,0; 0,0,1; 0,1,0` |
+| `.#image-installer-x86pc` | Console installer | — | N/A |
+| `.#image-installer-x86pc-gnome` | GNOME installer | GDM | N/A |
+| `.#image-installer-x86pc-plasma` | Plasma installer | SDDM | N/A |
 
 ## Before building
 
@@ -23,7 +28,10 @@ change `initialPassword`, `authorizedKey`, `ssid`, `psk`.
 |--------|---------|
 | Build SD image (GNOME) | `nix build` |
 | Build SD image (Plasma) | `nix build .#image-plasma` |
-| Build installer image | `nix build .#image-installer-pinetab2` |
+| Build installer image (PineTab2) | `nix build .#image-installer-pinetab2` |
+| Build x86_64 ISO (console) | `nix build .#image-installer-x86pc` |
+| Build x86_64 ISO (GNOME) | `nix build .#image-installer-x86pc-gnome` |
+| Build x86_64 ISO (Plasma) | `nix build .#image-installer-x86pc-plasma` |
 | Build u-boot only | `nix build .#uboot` |
 | Docker compose check | `docker compose run check` |
 | Docker compose build | `docker compose run build` |
@@ -44,11 +52,14 @@ Each variant has a fast eval-only check that asserts ~9 option values (hostname,
 | GNOME check | `nix build .#checks.x86_64-linux.check-gnome` |
 | Plasma check | `nix build .#checks.x86_64-linux.check-plasma` |
 | Phosh check | `nix build .#checks.x86_64-linux.check-phosh` |
+| x86_64 console check | `nix build .#checks.x86_64-linux.x86pc` |
+| x86_64 GNOME check | `nix build .#checks.x86_64-linux.x86pc-gnome` |
+| x86_64 Plasma check | `nix build .#checks.x86_64-linux.x86pc-plasma` |
 
 ## Quirks & gotchas
 
 - **Hostname is `PineBookPro`** — that's the target name used everywhere.
-- **`extra-substituters` and `extra-trusted-public-keys`** are defined at the wrong level in `flake.nix` (on the `nixosConfigurations` attrset, not as NixOS module options). They are effectively dead code. The Cachix binary cache is not actually configured.
+- **`extra-substituters` and `extra-trusted-public-keys`** are defined at the wrong level in `flake.nix` (on the `nixosConfigurations` attrset, not as NixOS module options). They are effectively dead code. The Cachix binary cache is now configured per-device in `devices/pinebook-pro.nix` and `devices/pinetab2.nix` (moved from `config.nix`).
 - **GNOME rotation**: 90° rotation compensation via `gdctl set` in a `landscape.service` oneshot (udev-triggered on USB keyboard dock). Only in `gnome.nix`.
 - **Phosh PAM crash**: `security.pam.services.login.updateWtmp = lib.mkForce false` works around `pam_lastlog2.so` symbol error.
 - **Phosh XWayland**: `phocConfig.xwayland = "immediate"` is set.
@@ -60,7 +71,7 @@ Each variant has a fast eval-only check that asserts ~9 option values (hostname,
 - **Plans** for restructuring and adding new devices are in `plans/`.
 - **CVE-2026-31431 (Copy Fail)**: `algif_aead` is blacklisted in `config.nix`; nixpkgsStable lock updated to kernel with the upstream fix (May 14). PineTab2 uses a custom 6.18.10 DanctNIX kernel that can't be updated via nixpkgs, so the blacklist is the interim mitigation. **TODO**: Check if DanctNIX has released `linux-pinetab2` ≥ 6.18.22 (the first fixed 6.18.x) and update the kernel src/hash + remove blacklist. Alternatively, cherry-pick the upstream fix commit `a664bf3d603d` onto the current kernel build.
 - **PCIe overlay** (`dtOverlayPCIeFix`) is applied to PineTab2 for RK3566 PCIe fix.
-- **Installer images** (`.#image-installer-*`) build minimal recovery SD images (no desktop, no home-manager).
+- **Installer images** (`.#image-installer-*`) build minimal recovery SD images (no desktop, no home-manager) for ARM targets, and standard NixOS ISOs for x86_64 PC targets.
 - **Docker compose** (`compose.yaml`) runs nix build/check in a container for environments without nix-daemon.
 - **`.gitignore`** ignores `/result` and `secrets.nix`.
 - **Plans** for restructuring and adding new devices are in `plans/`.

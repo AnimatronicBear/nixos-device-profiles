@@ -3,7 +3,8 @@
 **⚠ WIP — NOT FUNCTIONAL. Do not use for production or anything security-sensitive.**
 
 Multi-device NixOS flake — cross-compiled from x86_64 → aarch64-linux.
-Currently supports **PineBookPro** (RK3399) and **PineTab2** (RK3566).
+Currently supports **PineBookPro** (RK3399) and **PineTab2** (RK3566),
+plus **x86_64 PC** installer ISOs (native build).
 
 Forked from [raboof/pinetab2-nixos](https://codeberg.org/raboof/pinetab2-nixos)
 (PineTab2-only).
@@ -27,6 +28,9 @@ configuration may be insecure. Use at your own risk.
 | PineTab2 | GNOME | `.#PineTab2` / `.#image-pinetab2-gnome` | `1,0,0; 0,0,1; 0,1,0` |
 | PineTab2 | Plasma 6 | `.#PineTab2-plasma` / `.#image-pinetab2-plasma` | `0,0,-1; -1,0,0; 0,1,0` |
 | PineTab2 | Phosh | `.#PineTab2-phosh` | `1,0,0; 0,0,1; 0,1,0` |
+| x86_64 PC | Installer (console) | `.#image-installer-x86pc` | N/A — no sensor |
+| x86_64 PC | Installer (GNOME) | `.#image-installer-x86pc-gnome` | N/A — no sensor |
+| x86_64 PC | Installer (Plasma) | `.#image-installer-x86pc-plasma` | N/A — no sensor |
 
 ## Before building
 
@@ -69,10 +73,25 @@ nix build .#image-installer-pinetab2
 docker compose run build .#image-installer-pinetab2
 ```
 
+x86_64 PC installer ISOs (native build, no cross-compilation):
+
+```shell
+nix build .#image-installer-x86pc            # console-only
+docker compose run build .#image-installer-x86pc
+nix build .#image-installer-x86pc-gnome      # with GNOME desktop
+docker compose run build .#image-installer-x86pc-gnome
+nix build .#image-installer-x86pc-plasma     # with Plasma desktop
+docker compose run build .#image-installer-x86pc-plasma
+```
+
 Flash the result:
 
 ```shell
+# For SD card images (aarch64 Rockchip targets)
 dd if=result/sd-image/* of=/dev/sdX bs=4M
+
+# For ISO images (x86_64 PC targets)
+dd if=result/iso-image/*.iso of=/dev/sdX bs=4M status=progress
 ```
 
 ## Updating a running system
@@ -180,6 +199,10 @@ nix build .#checks.x86_64-linux.PineBookPro-gnome
 docker compose run build .#checks.x86_64-linux.PineBookPro-gnome
 nix build .#checks.x86_64-linux.PineTab2-plasma
 docker compose run build .#checks.x86_64-linux.PineTab2-plasma
+nix build .#checks.x86_64-linux.x86pc         # console installer
+docker compose run build .#checks.x86_64-linux.x86pc
+nix build .#checks.x86_64-linux.x86pc-gnome
+docker compose run build .#checks.x86_64-linux.x86pc-plasma
 ```
 
 ## Code formatting
@@ -197,6 +220,9 @@ docker compose run fmt
 | Build image (PT2 GNOME) | `nix build .#image-pinetab2-gnome` | `docker compose run build .#image-pinetab2-gnome` |
 | Build installer (PBP) | `nix build .#image-installer-pinebookpro` | `docker compose run build .#image-installer-pinebookpro` |
 | Build installer (PT2) | `nix build .#image-installer-pinetab2` | `docker compose run build .#image-installer-pinetab2` |
+| Build x86_64 ISO (console) | `nix build .#image-installer-x86pc` | `docker compose run build .#image-installer-x86pc` |
+| Build x86_64 ISO (GNOME) | `nix build .#image-installer-x86pc-gnome` | `docker compose run build .#image-installer-x86pc-gnome` |
+| Build x86_64 ISO (Plasma) | `nix build .#image-installer-x86pc-plasma` | `docker compose run build .#image-installer-x86pc-plasma` |
 | Build u-boot (PBP) | `nix build .#uboot` | `docker compose run build .#uboot` |
 | Build u-boot (PT2) | `nix build .#uboot-pinetab2` | `docker compose run build .#uboot-pinetab2` |
 | Run all checks | `nix flake check` | `docker compose run check` |
