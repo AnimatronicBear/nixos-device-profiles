@@ -2,6 +2,16 @@
 
 ## [unreleased]
 
+### Added
+- x86_64 PC installer ISOs — three variants: console (`.#image-installer-x86pc`), GNOME (`.#image-installer-x86pc-gnome`), Plasma (`.#image-installer-x86pc-plasma`). Built natively via `nixpkgs/nixos/modules/installer/cd-dvd/iso-image.nix`, no cross-compilation.
+- `devices/x86pc.nix` — generic x86_64 hardware device module
+- `checks.nix` — eval-only x86pc checks (console/gnome/plasma)
+
+### Changed
+- `config.nix` — moved `boot.kernelParams` and Rockchip binary cache to per-device configs (architecture-agnostic now)
+- `devices/pinebook-pro.nix` — added `boot.kernelParams` and `nix.settings` for Rockchip binary cache
+- `devices/pinetab2.nix` — added `boot.kernelParams` and `nix.settings` for Rockchip binary cache
+
 ### Fixed
 - `libqmi` build failure during cross-compilation — added `overlays/libqmi.nix` to disable GTK documentation generation (`-Dgtk_doc=false`)
 
