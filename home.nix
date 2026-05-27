@@ -1,4 +1,10 @@
-{ pkgs, lib, config, settings, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  settings,
+  ...
+}:
 
 {
   home.stateVersion = settings.stateVersion;

@@ -1,1 +1,4 @@
-[ (import ./onnxruntime.nix) (import ./libqmi.nix) ]
+[
+  (import ./onnxruntime.nix)
+  (import ./libqmi.nix)
+]
