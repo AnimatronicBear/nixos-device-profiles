@@ -2,6 +2,7 @@
   lib,
   pkgs,
   system,
+  rockchipOsConfigAarch64,
   osConfigAarch64,
   installerConfigX86,
 }:
@@ -33,7 +34,7 @@ let
   mkCheck =
     device: deviceModule: desktopFile: desktopName:
     let
-      cfg = (osConfigAarch64 system deviceModule desktopFile).config;
+      cfg = (rockchipOsConfigAarch64 system deviceModule desktopFile).config;
       hwdb = cfg.services.udev.extraHwdb or "";
       accelMatrices = {
         gnome = "1, 0, 0; 0, 0, 1; 0, 1, 0";
@@ -93,6 +94,23 @@ let
       }
       touch $out
     '';
+  mkCheckGenericAarch64 =
+    desktopName:
+    let
+      cfg = (osConfigAarch64 system ./devices/generic-aarch64.nix ./gnome.nix).config;
+    in
+    pkgs.runCommand "check-generic-aarch64-${desktopName}" { } ''
+      ${assertEq cfg.system.stateVersion "25.11" "stateVersion"}
+      ${assertTrue cfg.services.pipewire.enable "pipewire"}
+      ${assertEq (cfg.environment.sessionVariables.MOZ_ENABLE_WAYLAND or "") "1" "MOZ_ENABLE_WAYLAND"}
+      ${assertFalse cfg.services.openssh.settings.PasswordAuthentication "PasswordAuthentication"}
+      ${assertFalse (cfg.hardware.sensor.iio.enable or false) "iio"}
+      ${assertNoAttr (cfg.systemd.services or { }) "landscape" "landscape"}
+      ${assertEq (cfg.services.udev.extraHwdb or "") "" "extraHwdb"}
+      ${assertTrue cfg.services.desktopManager.gnome.enable "gnome"}
+      ${assertTrue cfg.services.displayManager.gdm.enable "gdm"}
+      touch $out
+    '';
   mkCheckX86 =
     desktopFile: desktopName:
     let
@@ -133,6 +151,7 @@ in
   PineTab2-gnome = mkCheck "PineTab2" ./devices/pinetab2.nix ./gnome.nix "gnome";
   PineTab2-plasma = mkCheck "PineTab2" ./devices/pinetab2.nix ./plasma.nix "plasma";
   PineTab2-phosh = mkCheck "PineTab2" ./devices/pinetab2.nix ./phosh.nix "phosh";
+  generic-aarch64-gnome = mkCheckGenericAarch64 "gnome";
   x86pc = mkCheckX86 { } "console";
   x86pc-gnome = mkCheckX86 ./gnome.nix "gnome";
   x86pc-plasma = mkCheckX86 ./plasma.nix "plasma";

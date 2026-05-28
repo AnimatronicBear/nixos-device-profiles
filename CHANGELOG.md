@@ -2,8 +2,26 @@
 
 ## [unreleased]
 
+### Changed
+- `flake.nix`, `compose.yaml` — added `cache.nixos.org` to `extra-substituters` with trusted public key for x86_64 binary cache substitution
+- `.env.example` — removed `NIX_CONFIG` (now hardcoded in `compose.yaml`)
+
 ### Fixed
 - `xdg-desktop-portal-1.20.4` integration tests (`dynamiclauncher`, `notification/sound_fd`) failing during x86 PC installer build — added overlay in `devices/x86pc.nix` to disable tests (they need D-Bus/portal services not present in the sandbox)
+- `installerConfigX86` — removed `overlayModule` from x86_64 installer config (overlays are for ARM cross-compilation only)
+
+### Added
+- `compose.yaml` — `deploy.resources` limits (14 CPUs, 22G RAM) to build service for OOM prevention
+- `compose.yaml` — `cat-result` service for extracting built image paths
+- **Generic aarch64 device support** — `devices/generic-aarch64.nix` for any extlinux-booting aarch64 SBC (no Rockchip dependency)
+- `flake.nix` — renamed Rockchip-specific builders to `rockchipOsConfigAarch64`/`rockchipInstallerConfigAarch64`; new generic `osConfigAarch64`/`installerConfigAarch64` without Rockchip
+- `nixosConfigurations.GenericAarch64` — GNOME SD image for generic aarch64
+- `nixosConfigurations.GenericAarch64-installer` — installer SD image for generic aarch64
+- `packages.nix` — `image-generic-aarch64`, `image-installer-generic-aarch64`
+- `checks.nix` — `generic-aarch64-gnome` eval-only check
+
+### Fixed
+- `compose.yaml` — changed `extra-trusted-substituters` → `extra-substituters` (works in single-user mode without nix-daemon); added `nabam-nixos-rockchip.cachix.org` to substituters so all builds share the cross-compilation binary cache
 
 ### Added
 - x86_64 PC installer ISOs — three variants: console (`.#image-installer-x86pc`), GNOME (`.#image-installer-x86pc-gnome`), Plasma (`.#image-installer-x86pc-plasma`). Built natively via `nixpkgs/nixos/modules/installer/cd-dvd/iso-image.nix`, no cross-compilation.

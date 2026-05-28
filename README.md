@@ -3,8 +3,8 @@
 **⚠ WIP — NOT FUNCTIONAL. Do not use for production or anything security-sensitive.**
 
 Multi-device NixOS flake — cross-compiled from x86_64 → aarch64-linux.
-Currently supports **PineBookPro** (RK3399) and **PineTab2** (RK3566),
-plus **x86_64 PC** installer ISOs (native build).
+Currently supports **PineBookPro** (RK3399), **PineTab2** (RK3566),
+**generic aarch64** SBCs, and **x86_64 PC** installer ISOs (native build).
 
 Forked from [raboof/pinetab2-nixos](https://codeberg.org/raboof/pinetab2-nixos)
 (PineTab2-only).
@@ -28,6 +28,8 @@ configuration may be insecure. Use at your own risk.
 | PineTab2 | GNOME | `.#PineTab2` / `.#image-pinetab2-gnome` | `1,0,0; 0,0,1; 0,1,0` |
 | PineTab2 | Plasma 6 | `.#PineTab2-plasma` / `.#image-pinetab2-plasma` | `0,0,-1; -1,0,0; 0,1,0` |
 | PineTab2 | Phosh | `.#PineTab2-phosh` | `1,0,0; 0,0,1; 0,1,0` |
+| Generic aarch64 | GNOME | `.#GenericAarch64` / `.#image-generic-aarch64` | (none — no sensor) |
+| Generic aarch64 | Installer | `.#GenericAarch64-installer` / `.#image-installer-generic-aarch64` | N/A — no sensor |
 | x86_64 PC | Installer (console) | `.#image-installer-x86pc` | N/A — no sensor |
 | x86_64 PC | Installer (GNOME) | `.#image-installer-x86pc-gnome` | N/A — no sensor |
 | x86_64 PC | Installer (Plasma) | `.#image-installer-x86pc-plasma` | N/A — no sensor |
@@ -62,6 +64,14 @@ docker compose run build .#image-pinetab2-plasma
 # PineTab2 Phosh
 nix build .#image-pinetab2-phosh
 docker compose run build .#image-pinetab2-phosh
+
+# Generic aarch64 GNOME
+nix build .#image-generic-aarch64
+docker compose run build .#image-generic-aarch64
+
+# Generic aarch64 installer
+nix build .#image-installer-generic-aarch64
+docker compose run build .#image-installer-generic-aarch64
 ```
 
 Installer images (no desktop, for recovery/installation):
@@ -102,7 +112,7 @@ nixos-rebuild --flake .#PineBookPro switch \
   --use-remote-sudo --ask-sudo-password
 ```
 
-To target a different device, replace `PineBookPro` with the configuration name (e.g. `PineTab2`, `PineBookPro-plasma`).
+To target a different device, replace `PineBookPro` with the configuration name (e.g. `PineTab2`, `GenericAarch64`, `PineBookPro-plasma`).
 
 ## Installing to eMMC
 
@@ -178,6 +188,8 @@ docker compose run check
 docker compose run build              # builds .#image-gnome (default)
 docker compose run build .#image-plasma
 docker compose run build .#image-pinetab2-gnome
+docker compose run build .#image-generic-aarch64
+docker compose run build .#image-installer-generic-aarch64
 docker compose run dev                # interactive shell
 docker compose run fmt
 ```
@@ -199,6 +211,8 @@ nix build .#checks.x86_64-linux.PineBookPro-gnome
 docker compose run build .#checks.x86_64-linux.PineBookPro-gnome
 nix build .#checks.x86_64-linux.PineTab2-plasma
 docker compose run build .#checks.x86_64-linux.PineTab2-plasma
+nix build .#checks.x86_64-linux.generic-aarch64-gnome
+docker compose run build .#checks.x86_64-linux.generic-aarch64-gnome
 nix build .#checks.x86_64-linux.x86pc         # console installer
 docker compose run build .#checks.x86_64-linux.x86pc
 nix build .#checks.x86_64-linux.x86pc-gnome
@@ -218,8 +232,10 @@ docker compose run fmt
 |--------|-------------|----------------|
 | Build image (PBP GNOME) | `nix build` | `docker compose run build` |
 | Build image (PT2 GNOME) | `nix build .#image-pinetab2-gnome` | `docker compose run build .#image-pinetab2-gnome` |
+| Build image (generic aarch64) | `nix build .#image-generic-aarch64` | `docker compose run build .#image-generic-aarch64` |
 | Build installer (PBP) | `nix build .#image-installer-pinebookpro` | `docker compose run build .#image-installer-pinebookpro` |
 | Build installer (PT2) | `nix build .#image-installer-pinetab2` | `docker compose run build .#image-installer-pinetab2` |
+| Build installer (generic aarch64) | `nix build .#image-installer-generic-aarch64` | `docker compose run build .#image-installer-generic-aarch64` |
 | Build x86_64 ISO (console) | `nix build .#image-installer-x86pc` | `docker compose run build .#image-installer-x86pc` |
 | Build x86_64 ISO (GNOME) | `nix build .#image-installer-x86pc-gnome` | `docker compose run build .#image-installer-x86pc-gnome` |
 | Build x86_64 ISO (Plasma) | `nix build .#image-installer-x86pc-plasma` | `docker compose run build .#image-installer-x86pc-plasma` |

@@ -35,7 +35,7 @@
           nixpkgs.overlays = import ./overlays;
         };
 
-      osConfigAarch64 =
+      rockchipOsConfigAarch64 =
         buildPlatform: deviceModule: variant:
         nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
@@ -52,7 +52,7 @@
           ];
         };
 
-      installerConfigAarch64 =
+      rockchipInstallerConfigAarch64 =
         buildPlatform: deviceModule:
         nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
@@ -68,13 +68,43 @@
           ];
         };
 
+      osConfigAarch64 =
+        buildPlatform: deviceModule: variant:
+        nixpkgs.lib.nixosSystem {
+          system = "aarch64-linux";
+          specialArgs = { inherit buildPlatform settings; };
+          modules = [
+            overlayModule
+            { nixpkgs.hostPlatform = "aarch64-linux"; }
+            { nixpkgs.buildPlatform = buildPlatform; }
+            home-manager.nixosModules.home-manager
+            ./config.nix
+            variant
+            deviceModule
+          ];
+        };
+
+      installerConfigAarch64 =
+        buildPlatform: deviceModule:
+        nixpkgs.lib.nixosSystem {
+          system = "aarch64-linux";
+          specialArgs = { inherit buildPlatform settings; };
+          modules = [
+            overlayModule
+            { nixpkgs.hostPlatform = "aarch64-linux"; }
+            { nixpkgs.buildPlatform = buildPlatform; }
+            home-manager.nixosModules.home-manager
+            ./config.nix
+            deviceModule
+          ];
+        };
+
       installerConfigX86 =
         variant:
         nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = { inherit settings; };
           modules = [
-            overlayModule
             { nixpkgs.hostPlatform = "x86_64-linux"; }
             home-manager.nixosModules.home-manager
             ./config.nix
@@ -87,28 +117,38 @@
       nixConfig = {
         max-jobs = 4;
         cores = 0;
-        extra-substituters = [ "https://nabam-nixos-rockchip.cachix.org" ];
+        extra-substituters = [
+          "https://cache.nixos.org"
+          "https://nabam-nixos-rockchip.cachix.org"
+        ];
         extra-trusted-public-keys = [
+          "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
           "nabam-nixos-rockchip.cachix.org-1:BQDltcnV8GS/G86tdvjLwLFz1WeFqSk7O9yl+DR0AVM"
         ];
       };
 
       nixosConfigurations.PineBookPro =
-        osConfigAarch64 "x86_64-linux" ./devices/pinebook-pro.nix
+        rockchipOsConfigAarch64 "x86_64-linux" ./devices/pinebook-pro.nix
           ./gnome.nix;
       nixosConfigurations.PineBookPro-plasma =
-        osConfigAarch64 "x86_64-linux" ./devices/pinebook-pro.nix
+        rockchipOsConfigAarch64 "x86_64-linux" ./devices/pinebook-pro.nix
           ./plasma.nix;
       nixosConfigurations.PineBookPro-phosh =
-        osConfigAarch64 "x86_64-linux" ./devices/pinebook-pro.nix
+        rockchipOsConfigAarch64 "x86_64-linux" ./devices/pinebook-pro.nix
           ./phosh.nix;
-      nixosConfigurations.PineTab2 = osConfigAarch64 "x86_64-linux" ./devices/pinetab2.nix ./gnome.nix;
+      nixosConfigurations.PineTab2 =
+        rockchipOsConfigAarch64 "x86_64-linux" ./devices/pinetab2.nix
+          ./gnome.nix;
       nixosConfigurations.PineTab2-plasma =
-        osConfigAarch64 "x86_64-linux" ./devices/pinetab2.nix
+        rockchipOsConfigAarch64 "x86_64-linux" ./devices/pinetab2.nix
           ./plasma.nix;
       nixosConfigurations.PineTab2-phosh =
-        osConfigAarch64 "x86_64-linux" ./devices/pinetab2.nix
+        rockchipOsConfigAarch64 "x86_64-linux" ./devices/pinetab2.nix
           ./phosh.nix;
+      nixosConfigurations.GenericAarch64 =
+        osConfigAarch64 "x86_64-linux" ./devices/generic-aarch64.nix
+          ./gnome.nix;
+      nixosConfigurations.GenericAarch64-installer = installerConfigAarch64 "x86_64-linux" ./devices/generic-aarch64.nix;
     }
     // utils.lib.eachDefaultSystem (
       system:
@@ -120,6 +160,7 @@
             lib
             pkgs
             system
+            rockchipOsConfigAarch64
             osConfigAarch64
             installerConfigX86
             ;
@@ -129,6 +170,8 @@
             lib
             pkgs
             system
+            rockchipOsConfigAarch64
+            rockchipInstallerConfigAarch64
             osConfigAarch64
             installerConfigAarch64
             installerConfigX86
