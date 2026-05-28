@@ -13,6 +13,12 @@
 ### Added
 - `compose.yaml` — `deploy.resources` limits (14 CPUs, 22G RAM) to build service for OOM prevention
 - `compose.yaml` — `cat-result` service for extracting built image paths
+- **Generic aarch64 device support** — `devices/generic-aarch64.nix` for any extlinux-booting aarch64 SBC (no Rockchip dependency)
+- `flake.nix` — renamed Rockchip-specific builders to `rockchipOsConfigAarch64`/`rockchipInstallerConfigAarch64`; new generic `osConfigAarch64`/`installerConfigAarch64` without Rockchip
+- `nixosConfigurations.GenericAarch64` — GNOME SD image for generic aarch64
+- `nixosConfigurations.GenericAarch64-installer` — installer SD image for generic aarch64
+- `packages.nix` — `image-generic-aarch64`, `image-installer-generic-aarch64`
+- `checks.nix` — `generic-aarch64-gnome` eval-only check
 
 ### Added
 - x86_64 PC installer ISOs — three variants: console (`.#image-installer-x86pc`), GNOME (`.#image-installer-x86pc-gnome`), Plasma (`.#image-installer-x86pc-plasma`). Built natively via `nixpkgs/nixos/modules/installer/cd-dvd/iso-image.nix`, no cross-compilation.
