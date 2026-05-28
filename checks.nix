@@ -2,9 +2,7 @@
   lib,
   pkgs,
   system,
-  rockchipOsConfigAarch64,
-  osConfigAarch64,
-  installerConfigX86,
+  myLib,
 }:
 
 let
@@ -32,9 +30,9 @@ let
       builtins.abort "${m}: pattern did not match '${pattern}'";
 
   mkCheck =
-    device: deviceModule: desktopFile: desktopName:
+    device: hostModule: desktopFile: desktopName:
     let
-      cfg = (rockchipOsConfigAarch64 system deviceModule desktopFile).config;
+      cfg = (myLib.rockchipOsConfigAarch64 system hostModule desktopFile).config;
       hwdb = cfg.services.udev.extraHwdb or "";
       accelMatrices = {
         gnome = "1, 0, 0; 0, 0, 1; 0, 1, 0";
@@ -94,10 +92,13 @@ let
       }
       touch $out
     '';
+
   mkCheckGenericAarch64 =
     desktopName:
     let
-      cfg = (osConfigAarch64 system ./devices/generic-aarch64.nix ./gnome.nix).config;
+      cfg =
+        (myLib.osConfigAarch64 system ./hosts/nixos/GenericAarch64 ./hosts/common/optional/gnome.nix)
+        .config;
     in
     pkgs.runCommand "check-generic-aarch64-${desktopName}" { } ''
       ${assertEq cfg.system.stateVersion "25.11" "stateVersion"}
@@ -111,10 +112,11 @@ let
       ${assertTrue cfg.services.displayManager.gdm.enable "gdm"}
       touch $out
     '';
+
   mkCheckX86 =
     desktopFile: desktopName:
     let
-      cfg = (installerConfigX86 desktopFile).config;
+      cfg = (myLib.installerConfigX86 desktopFile).config;
     in
     pkgs.runCommand "check-x86pc-${desktopName}" { } ''
       ${assertEq cfg.networking.hostName "x86pc" "hostName"}
@@ -145,14 +147,26 @@ let
     '';
 in
 {
-  PineBookPro-gnome = mkCheck "PineBookPro" ./devices/pinebook-pro.nix ./gnome.nix "gnome";
-  PineBookPro-plasma = mkCheck "PineBookPro" ./devices/pinebook-pro.nix ./plasma.nix "plasma";
-  PineBookPro-phosh = mkCheck "PineBookPro" ./devices/pinebook-pro.nix ./phosh.nix "phosh";
-  PineTab2-gnome = mkCheck "PineTab2" ./devices/pinetab2.nix ./gnome.nix "gnome";
-  PineTab2-plasma = mkCheck "PineTab2" ./devices/pinetab2.nix ./plasma.nix "plasma";
-  PineTab2-phosh = mkCheck "PineTab2" ./devices/pinetab2.nix ./phosh.nix "phosh";
+  PineBookPro-gnome =
+    mkCheck "PineBookPro" ./hosts/nixos/PineBookPro ./hosts/common/optional/gnome.nix
+      "gnome";
+  PineBookPro-plasma =
+    mkCheck "PineBookPro" ./hosts/nixos/PineBookPro ./hosts/common/optional/plasma.nix
+      "plasma";
+  PineBookPro-phosh =
+    mkCheck "PineBookPro" ./hosts/nixos/PineBookPro ./hosts/common/optional/phosh.nix
+      "phosh";
+  PineTab2-gnome =
+    mkCheck "PineTab2" ./hosts/nixos/PineTab2 ./hosts/common/optional/gnome.nix
+      "gnome";
+  PineTab2-plasma =
+    mkCheck "PineTab2" ./hosts/nixos/PineTab2 ./hosts/common/optional/plasma.nix
+      "plasma";
+  PineTab2-phosh =
+    mkCheck "PineTab2" ./hosts/nixos/PineTab2 ./hosts/common/optional/phosh.nix
+      "phosh";
   generic-aarch64-gnome = mkCheckGenericAarch64 "gnome";
   x86pc = mkCheckX86 { } "console";
-  x86pc-gnome = mkCheckX86 ./gnome.nix "gnome";
-  x86pc-plasma = mkCheckX86 ./plasma.nix "plasma";
+  x86pc-gnome = mkCheckX86 ./hosts/common/optional/gnome.nix "gnome";
+  x86pc-plasma = mkCheckX86 ./hosts/common/optional/plasma.nix "plasma";
 }

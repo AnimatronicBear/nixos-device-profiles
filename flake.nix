@@ -29,89 +29,16 @@
       settingsFile =
         if builtins.pathExists ./settings.nix then ./settings.nix else ./settings.nix.example;
       settings = import settingsFile;
-      overlayModule =
-        { config, lib, ... }:
-        {
-          nixpkgs.overlays = import ./overlays;
-        };
 
-      rockchipOsConfigAarch64 =
-        buildPlatform: deviceModule: variant:
-        nixpkgs.lib.nixosSystem {
-          system = "aarch64-linux";
-          specialArgs = { inherit rockchip buildPlatform settings; };
-          modules = [
-            overlayModule
-            { nixpkgs.hostPlatform = "aarch64-linux"; }
-            { nixpkgs.buildPlatform = buildPlatform; }
-            rockchip.nixosModules.sdImageRockchip
-            home-manager.nixosModules.home-manager
-            ./config.nix
-            variant
-            deviceModule
-          ];
-        };
-
-      rockchipInstallerConfigAarch64 =
-        buildPlatform: deviceModule:
-        nixpkgs.lib.nixosSystem {
-          system = "aarch64-linux";
-          specialArgs = { inherit rockchip buildPlatform settings; };
-          modules = [
-            overlayModule
-            { nixpkgs.hostPlatform = "aarch64-linux"; }
-            { nixpkgs.buildPlatform = buildPlatform; }
-            rockchip.nixosModules.sdImageRockchipInstaller
-            home-manager.nixosModules.home-manager
-            ./config.nix
-            deviceModule
-          ];
-        };
-
-      osConfigAarch64 =
-        buildPlatform: deviceModule: variant:
-        nixpkgs.lib.nixosSystem {
-          system = "aarch64-linux";
-          specialArgs = { inherit buildPlatform settings; };
-          modules = [
-            overlayModule
-            { nixpkgs.hostPlatform = "aarch64-linux"; }
-            { nixpkgs.buildPlatform = buildPlatform; }
-            home-manager.nixosModules.home-manager
-            ./config.nix
-            variant
-            deviceModule
-          ];
-        };
-
-      installerConfigAarch64 =
-        buildPlatform: deviceModule:
-        nixpkgs.lib.nixosSystem {
-          system = "aarch64-linux";
-          specialArgs = { inherit buildPlatform settings; };
-          modules = [
-            overlayModule
-            { nixpkgs.hostPlatform = "aarch64-linux"; }
-            { nixpkgs.buildPlatform = buildPlatform; }
-            home-manager.nixosModules.home-manager
-            ./config.nix
-            deviceModule
-          ];
-        };
-
-      installerConfigX86 =
-        variant:
-        nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          specialArgs = { inherit settings; };
-          modules = [
-            { nixpkgs.hostPlatform = "x86_64-linux"; }
-            home-manager.nixosModules.home-manager
-            ./config.nix
-            ./devices/x86pc.nix
-            variant
-          ];
-        };
+      myLib = import ./lib {
+        inherit
+          nixpkgs
+          rockchip
+          home-manager
+          utils
+          settings
+          ;
+      };
     in
     {
       nixConfig = {
@@ -127,28 +54,30 @@
         ];
       };
 
-      nixosConfigurations.PineBookPro =
-        rockchipOsConfigAarch64 "x86_64-linux" ./devices/pinebook-pro.nix
-          ./gnome.nix;
-      nixosConfigurations.PineBookPro-plasma =
-        rockchipOsConfigAarch64 "x86_64-linux" ./devices/pinebook-pro.nix
-          ./plasma.nix;
-      nixosConfigurations.PineBookPro-phosh =
-        rockchipOsConfigAarch64 "x86_64-linux" ./devices/pinebook-pro.nix
-          ./phosh.nix;
-      nixosConfigurations.PineTab2 =
-        rockchipOsConfigAarch64 "x86_64-linux" ./devices/pinetab2.nix
-          ./gnome.nix;
-      nixosConfigurations.PineTab2-plasma =
-        rockchipOsConfigAarch64 "x86_64-linux" ./devices/pinetab2.nix
-          ./plasma.nix;
-      nixosConfigurations.PineTab2-phosh =
-        rockchipOsConfigAarch64 "x86_64-linux" ./devices/pinetab2.nix
-          ./phosh.nix;
-      nixosConfigurations.GenericAarch64 =
-        osConfigAarch64 "x86_64-linux" ./devices/generic-aarch64.nix
-          ./gnome.nix;
-      nixosConfigurations.GenericAarch64-installer = installerConfigAarch64 "x86_64-linux" ./devices/generic-aarch64.nix;
+      nixosConfigurations = {
+        PineBookPro =
+          myLib.rockchipOsConfigAarch64 "x86_64-linux" ./hosts/nixos/PineBookPro
+            ./hosts/common/optional/gnome.nix;
+        PineBookPro-plasma =
+          myLib.rockchipOsConfigAarch64 "x86_64-linux" ./hosts/nixos/PineBookPro
+            ./hosts/common/optional/plasma.nix;
+        PineBookPro-phosh =
+          myLib.rockchipOsConfigAarch64 "x86_64-linux" ./hosts/nixos/PineBookPro
+            ./hosts/common/optional/phosh.nix;
+        PineTab2 =
+          myLib.rockchipOsConfigAarch64 "x86_64-linux" ./hosts/nixos/PineTab2
+            ./hosts/common/optional/gnome.nix;
+        PineTab2-plasma =
+          myLib.rockchipOsConfigAarch64 "x86_64-linux" ./hosts/nixos/PineTab2
+            ./hosts/common/optional/plasma.nix;
+        PineTab2-phosh =
+          myLib.rockchipOsConfigAarch64 "x86_64-linux" ./hosts/nixos/PineTab2
+            ./hosts/common/optional/phosh.nix;
+        GenericAarch64 =
+          myLib.osConfigAarch64 "x86_64-linux" ./hosts/nixos/GenericAarch64
+            ./hosts/common/optional/gnome.nix;
+        GenericAarch64-installer = myLib.installerConfigAarch64 "x86_64-linux" ./hosts/nixos/GenericAarch64;
+      };
     }
     // utils.lib.eachDefaultSystem (
       system:
@@ -160,9 +89,7 @@
             lib
             pkgs
             system
-            rockchipOsConfigAarch64
-            osConfigAarch64
-            installerConfigX86
+            myLib
             ;
         };
         myPackages = import ./packages.nix {
@@ -170,11 +97,7 @@
             lib
             pkgs
             system
-            rockchipOsConfigAarch64
-            rockchipInstallerConfigAarch64
-            osConfigAarch64
-            installerConfigAarch64
-            installerConfigX86
+            myLib
             ;
         };
       in

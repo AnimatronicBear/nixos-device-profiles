@@ -11,8 +11,6 @@
     wayland.enable = true;
   };
   environment.systemPackages = with pkgs; [
-    # TODO this might still need explicit manual configuration on first install,
-    # double-check
     kdePackages.plasma-keyboard
   ];
 }

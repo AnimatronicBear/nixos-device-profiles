@@ -165,7 +165,7 @@ flashcp -v -A u-boot-rockchip-spi.bin /dev/mtd0
 System packages and user packages are configured in `settings.nix` (see
 `settings.nix.example`). User dotfiles (git config, VSCodium extensions,
 browser settings) are managed by
-[home-manager](https://github.com/nix-community/home-manager) in `home.nix`.
+[home-manager](https://github.com/nix-community/home-manager) in `home/bear/common/core/default.nix`.
 
 ## Binary cache
 
@@ -175,7 +175,7 @@ u-boot, and firmware (configured at both the flake and NixOS system level).
 ## Security
 
 **CVE-2026-31431 (Copy Fail)** is mitigated by blacklisting `algif_aead`
-in `config.nix`. The nixpkgs stable input is updated to a kernel containing
+in `hosts/common/core/default.nix`. The nixpkgs stable input is updated to a kernel containing
 the upstream fix (available for PineBookPro; PineTab2 uses a custom DanctNIX
 kernel that relies on the blacklist workaround).
 

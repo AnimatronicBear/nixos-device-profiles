@@ -3,8 +3,25 @@
 ## [unreleased]
 
 ### Changed
+- Restructured to EmergentMind/nix-config-starter layout:
+  - `config.nix` → `hosts/common/core/default.nix`
+  - `{gnome,plasma,phosh}.nix` → `hosts/common/optional/`
+  - `devices/pinebook-pro.nix` → `hosts/nixos/PineBookPro/default.nix`
+  - `devices/pinetab2.nix` → `hosts/nixos/PineTab2/default.nix`
+  - `devices/generic-aarch64.nix` → `hosts/nixos/GenericAarch64/default.nix`
+  - `devices/x86pc.nix` → `hosts/nixos/X86Pc/default.nix`
+  - `home.nix` → `home/bear/common/core/default.nix`
+  - `flake.nix` — now thin, delegates builders to `lib/default.nix`
+  - Builder functions (`rockchipOsConfigAarch64`, `osConfigAarch64`, etc.) moved to `lib/default.nix`
+- `hosts/common/core/default.nix` — eliminated redundant `settings.nix` re-read; uses `settings` specialArg directly for all attributes (including secrets)
 - `flake.nix`, `compose.yaml` — added `cache.nixos.org` to `extra-substituters` with trusted public key for x86_64 binary cache substitution
 - `.env.example` — removed `NIX_CONFIG` (now hardcoded in `compose.yaml`)
+
+### Added
+- `lib/default.nix` — extracted builder functions from `flake.nix`
+- `shell.nix` — dev shell with `nixfmt-tree`, `nix-output-monitor`
+- `.envrc` — `use flake` for direnv auto-load
+- `justfile` — aliases for `build`, `check`, `update`, `fmt`, `dev`
 
 ### Fixed
 - `xdg-desktop-portal-1.20.4` integration tests (`dynamiclauncher`, `notification/sound_fd`) failing during x86 PC installer build — added overlay in `devices/x86pc.nix` to disable tests (they need D-Bus/portal services not present in the sandbox)

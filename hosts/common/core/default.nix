@@ -6,11 +6,6 @@
     settings,
     ...
   }:
-
-  let
-    secretsFile = if builtins.pathExists ./settings.nix then ./settings.nix else ./settings.nix.example;
-    secrets = import secretsFile;
-  in
   {
     system.stateVersion = settings.stateVersion;
 
@@ -28,8 +23,8 @@
     nix.settings.trusted-users = [ settings.username ];
 
     users.users.${settings.username} = {
-      initialPassword = secrets.initialPassword;
-      openssh.authorizedKeys.keys = [ secrets.authorizedKey ];
+      initialPassword = settings.initialPassword;
+      openssh.authorizedKeys.keys = [ settings.authorizedKey ];
       isNormalUser = true;
       extraGroups = [
         "wheel"
@@ -53,12 +48,9 @@
 
     networking.networkmanager = {
       enable = true;
-      # bes2600 powersave causes wifi stability issues, dmesg:
-      # bes2600_wlan mmc2:0001:1: bes2600_pwr_enter_lp_mode, wait pm ind timeout
-      # wifi.powersave = false;
-      ensureProfiles.profiles."${secrets.ssid}" = {
+      ensureProfiles.profiles."${settings.ssid}" = {
         connection = {
-          id = secrets.ssid;
+          id = settings.ssid;
           interface-name = "wlan0";
           type = "wifi";
           uuid = "f5541fe5-a769-4c72-b106-d87d1432792e";
@@ -73,18 +65,18 @@
         proxy = { };
         wifi = {
           mode = "infrastructure";
-          ssid = secrets.ssid;
+          ssid = settings.ssid;
         };
         wifi-security = {
           auth-alg = "open";
           key-mgmt = "wpa-psk";
-          psk = secrets.psk;
+          psk = settings.psk;
         };
       };
     };
 
     services.openssh = {
-      enable = builtins.stringLength secrets.authorizedKey > 0;
+      enable = builtins.stringLength settings.authorizedKey > 0;
       settings.PasswordAuthentication = false;
       settings.KbdInteractiveAuthentication = false;
     };
@@ -92,7 +84,6 @@
     services.automatic-timezoned.enable = true;
     services.geoclue2.enableDemoAgent = lib.mkForce true;
 
-    #services.flatpak.enable = true;
     services.printing.enable = true;
 
     services.avahi = {
@@ -135,7 +126,7 @@
       useGlobalPkgs = true;
       useUserPackages = true;
       extraSpecialArgs = { inherit settings; };
-      users.${settings.username} = ./home.nix;
+      users.${settings.username} = import ../../../home/bear/common/core/default.nix;
     };
   }
 )
