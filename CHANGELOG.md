@@ -20,6 +20,9 @@
 - `packages.nix` — `image-generic-aarch64`, `image-installer-generic-aarch64`
 - `checks.nix` — `generic-aarch64-gnome` eval-only check
 
+### Fixed
+- `compose.yaml` — changed `extra-trusted-substituters` → `extra-substituters` (works in single-user mode without nix-daemon); added `nabam-nixos-rockchip.cachix.org` to substituters so all builds share the cross-compilation binary cache
+
 ### Added
 - x86_64 PC installer ISOs — three variants: console (`.#image-installer-x86pc`), GNOME (`.#image-installer-x86pc-gnome`), Plasma (`.#image-installer-x86pc-plasma`). Built natively via `nixpkgs/nixos/modules/installer/cd-dvd/iso-image.nix`, no cross-compilation.
 - `devices/x86pc.nix` — generic x86_64 hardware device module

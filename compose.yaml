@@ -9,8 +9,8 @@ services:
     environment:
       NIX_CONFIG: |
         experimental-features = nix-command flakes
-        extra-trusted-substituters = https://cache.nixos.org
-        extra-trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+        extra-substituters = https://cache.nixos.org https://nabam-nixos-rockchip.cachix.org
+        extra-trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nabam-nixos-rockchip.cachix.org-1:BQDltcnV8GS/G86tdvjLwLFz1WeFqSk7O9yl+DR0AVM
     entrypoint: ./scripts/check.sh
 
   build:
@@ -23,8 +23,8 @@ services:
     environment:
       NIX_CONFIG: |
         experimental-features = nix-command flakes
-        extra-trusted-substituters = https://cache.nixos.org
-        extra-trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+        extra-substituters = https://cache.nixos.org https://nabam-nixos-rockchip.cachix.org
+        extra-trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nabam-nixos-rockchip.cachix.org-1:BQDltcnV8GS/G86tdvjLwLFz1WeFqSk7O9yl+DR0AVM
     entrypoint: ./scripts/build.sh
     command: .#image-gnome
     deploy:
@@ -52,8 +52,8 @@ services:
     environment:
       NIX_CONFIG: |
         experimental-features = nix-command flakes
-        extra-trusted-substituters = https://cache.nixos.org
-        extra-trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+        extra-substituters = https://cache.nixos.org https://nabam-nixos-rockchip.cachix.org
+        extra-trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nabam-nixos-rockchip.cachix.org-1:BQDltcnV8GS/G86tdvjLwLFz1WeFqSk7O9yl+DR0AVM
     command: sh -c 'git config --global safe.directory /workspace 2>/dev/null; exec nix fmt "$@"' --
 
   dev:
@@ -66,8 +66,8 @@ services:
     environment:
       NIX_CONFIG: |
         experimental-features = nix-command flakes
-        extra-trusted-substituters = https://cache.nixos.org
-        extra-trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+        extra-substituters = https://cache.nixos.org https://nabam-nixos-rockchip.cachix.org
+        extra-trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nabam-nixos-rockchip.cachix.org-1:BQDltcnV8GS/G86tdvjLwLFz1WeFqSk7O9yl+DR0AVM
     stdin_open: true
     tty: true
 
