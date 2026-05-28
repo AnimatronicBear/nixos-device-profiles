@@ -158,14 +158,15 @@ flashcp -v -A u-boot-rockchip-spi.bin /dev/mtd0
 
 | Package | Where | Notes |
 |---------|-------|-------|
-| `git`, `htop` | System (`settings.nix` → `config.nix`) | `extraSystemPackages` |
-| `docker` | System (`config.nix`) | User in `docker` group |
-| `librewolf`, `ungoogled-chromium`, `vscodium` | User (`settings.nix` → `home.nix`) | `extraUserPackages` |
+| `git`, `htop` | System (`settings.nix`) | `extraSystemPackages` |
+| `docker` | System (`hosts/common/core/default.nix`) | User in `docker` group |
+| `librewolf`, `ungoogled-chromium`, `vscodium` | User (`settings.nix`) | `extraUserPackages` |
 
 System packages and user packages are configured in `settings.nix` (see
 `settings.nix.example`). User dotfiles (git config, VSCodium extensions,
 browser settings) are managed by
-[home-manager](https://github.com/nix-community/home-manager) in `home/bear/common/core/default.nix`.
+[home-manager](https://github.com/nix-community/home-manager) in
+`home/_username_/common/core/default.nix`.
 
 ## Binary cache
 
@@ -213,9 +214,11 @@ nix build .#checks.x86_64-linux.PineTab2-plasma
 docker compose run build .#checks.x86_64-linux.PineTab2-plasma
 nix build .#checks.x86_64-linux.generic-aarch64-gnome
 docker compose run build .#checks.x86_64-linux.generic-aarch64-gnome
-nix build .#checks.x86_64-linux.x86pc         # console installer
+nix build .#checks.x86_64-linux.x86pc        # console installer
 docker compose run build .#checks.x86_64-linux.x86pc
 nix build .#checks.x86_64-linux.x86pc-gnome
+docker compose run build .#checks.x86_64-linux.x86pc-gnome
+nix build .#checks.x86_64-linux.x86pc-plasma
 docker compose run build .#checks.x86_64-linux.x86pc-plasma
 ```
 
@@ -230,17 +233,17 @@ docker compose run fmt
 
 | Action | nix command | Docker compose |
 |--------|-------------|----------------|
-| Build image (PBP GNOME) | `nix build` | `docker compose run build` |
-| Build image (PT2 GNOME) | `nix build .#image-pinetab2-gnome` | `docker compose run build .#image-pinetab2-gnome` |
+| Build image (PineBookPro GNOME) | `nix build` | `docker compose run build` |
+| Build image (PineTab2 GNOME) | `nix build .#image-pinetab2-gnome` | `docker compose run build .#image-pinetab2-gnome` |
 | Build image (generic aarch64) | `nix build .#image-generic-aarch64` | `docker compose run build .#image-generic-aarch64` |
-| Build installer (PBP) | `nix build .#image-installer-pinebookpro` | `docker compose run build .#image-installer-pinebookpro` |
-| Build installer (PT2) | `nix build .#image-installer-pinetab2` | `docker compose run build .#image-installer-pinetab2` |
+| Build installer (PineBookPro) | `nix build .#image-installer-pinebookpro` | `docker compose run build .#image-installer-pinebookpro` |
+| Build installer (PineTab2) | `nix build .#image-installer-pinetab2` | `docker compose run build .#image-installer-pinetab2` |
 | Build installer (generic aarch64) | `nix build .#image-installer-generic-aarch64` | `docker compose run build .#image-installer-generic-aarch64` |
 | Build x86_64 ISO (console) | `nix build .#image-installer-x86pc` | `docker compose run build .#image-installer-x86pc` |
 | Build x86_64 ISO (GNOME) | `nix build .#image-installer-x86pc-gnome` | `docker compose run build .#image-installer-x86pc-gnome` |
 | Build x86_64 ISO (Plasma) | `nix build .#image-installer-x86pc-plasma` | `docker compose run build .#image-installer-x86pc-plasma` |
-| Build u-boot (PBP) | `nix build .#uboot` | `docker compose run build .#uboot` |
-| Build u-boot (PT2) | `nix build .#uboot-pinetab2` | `docker compose run build .#uboot-pinetab2` |
+| Build u-boot (PineBookPro) | `nix build .#uboot` | `docker compose run build .#uboot` |
+| Build u-boot (PineTab2) | `nix build .#uboot-pinetab2` | `docker compose run build .#uboot-pinetab2` |
 | Run all checks | `nix flake check` | `docker compose run check` |
 | Format Nix files | `nix fmt` | `docker compose run fmt` |
 | Interactive shell | — | `docker compose run dev` |

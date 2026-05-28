@@ -21,6 +21,12 @@ let
   uboot = (myLib.rockchipOsConfigAarch64 system ./hosts/nixos/PineBookPro { }).config.rockchip.uBoot;
   uboot-pinetab2 =
     (myLib.rockchipOsConfigAarch64 system ./hosts/nixos/PineTab2 { }).config.rockchip.uBoot;
+  image-pinetab2-phosh =
+    (myLib.rockchipOsConfigAarch64 system ./hosts/nixos/PineTab2 ./hosts/common/optional/phosh.nix)
+    .config.system.build.sdImage;
+  image-phosh =
+    (myLib.rockchipOsConfigAarch64 system ./hosts/nixos/PineBookPro ./hosts/common/optional/phosh.nix)
+    .config.system.build.sdImage;
   image-installer-pinebookpro =
     (myLib.rockchipInstallerConfigAarch64 system ./hosts/nixos/PineBookPro).config.system.build.sdImage;
   image-installer-pinetab2 =
@@ -42,6 +48,8 @@ in
     image-plasma
     image-pinetab2-gnome
     image-pinetab2-plasma
+    image-pinetab2-phosh
+    image-phosh
     uboot
     uboot-pinetab2
     image-installer-pinebookpro

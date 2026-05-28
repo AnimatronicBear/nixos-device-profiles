@@ -126,7 +126,7 @@
       useGlobalPkgs = true;
       useUserPackages = true;
       extraSpecialArgs = { inherit settings; };
-      users.${settings.username} = import ../../../home/bear/common/core/default.nix;
+      users.${settings.username} = import ../../../home/_username_/common/core/default.nix;
     };
   }
 )

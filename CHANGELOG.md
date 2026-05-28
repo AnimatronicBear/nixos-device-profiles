@@ -10,7 +10,7 @@
   - `devices/pinetab2.nix` → `hosts/nixos/PineTab2/default.nix`
   - `devices/generic-aarch64.nix` → `hosts/nixos/GenericAarch64/default.nix`
   - `devices/x86pc.nix` → `hosts/nixos/X86Pc/default.nix`
-  - `home.nix` → `home/bear/common/core/default.nix`
+  - `home.nix` → `home/_username_/common/core/default.nix`
   - `flake.nix` — now thin, delegates builders to `lib/default.nix`
   - Builder functions (`rockchipOsConfigAarch64`, `osConfigAarch64`, etc.) moved to `lib/default.nix`
 - `hosts/common/core/default.nix` — eliminated redundant `settings.nix` re-read; uses `settings` specialArg directly for all attributes (including secrets)

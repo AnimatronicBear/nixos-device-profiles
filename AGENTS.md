@@ -75,7 +75,7 @@ hosts/
     PineTab2/          — device module (uBoot, kernel, firmware, IIO, landscape)
     GenericAarch64/    — generic extlinux-booting aarch64 SBC (no Rockchip)
     X86Pc/             — x86_64 PC installer (ISO image)
-home/bear/common/core/default.nix  — home-manager config
+home/_username_/common/core/default.nix  — home-manager config
 checks.nix             — eval-only option assertions
 packages.nix           — flake package definitions
 overlays/              — cross-compilation fixes
@@ -93,7 +93,6 @@ overlays/              — cross-compilation fixes
 - **State version**: `25.11` (hosts/common/core/default.nix), nixpkgs-unstable for main channel, nixpkgs 25.11 for stable.
 - **`nixosSystem` args**: `nixpkgs.hostPlatform` and `buildPlatform` must be set via modules, not as top-level `nixosSystem(...)` args (nixpkgs-unstable rejects them).
 - **Checks** are eval-only option assertions (no kernel compile). Image builds are separate.
-- **Plans** for restructuring and adding new devices are in `plans/`.
 - **CVE-2026-31431 (Copy Fail)**: `algif_aead` is blacklisted in `hosts/common/core/default.nix`; nixpkgsStable lock updated to kernel with the upstream fix (May 14). PineTab2 uses a custom 6.18.10 DanctNIX kernel that can't be updated via nixpkgs, so the blacklist is the interim mitigation.
 - **PCIe overlay** (`dtOverlayPCIeFix`) is applied to PineTab2 for RK3566 PCIe fix.
 - **Installer images** (`.#image-installer-*`) build minimal recovery SD images (no desktop, no home-manager) for ARM targets, and standard NixOS ISOs for x86_64 PC targets.
