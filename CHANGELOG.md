@@ -8,6 +8,11 @@
 
 ### Fixed
 - `xdg-desktop-portal-1.20.4` integration tests (`dynamiclauncher`, `notification/sound_fd`) failing during x86 PC installer build — added overlay in `devices/x86pc.nix` to disable tests (they need D-Bus/portal services not present in the sandbox)
+- `installerConfigX86` — removed `overlayModule` from x86_64 installer config (overlays are for ARM cross-compilation only)
+
+### Added
+- `compose.yaml` — `deploy.resources` limits (14 CPUs, 22G RAM) to build service for OOM prevention
+- `compose.yaml` — `cat-result` service for extracting built image paths
 
 ### Added
 - x86_64 PC installer ISOs — three variants: console (`.#image-installer-x86pc`), GNOME (`.#image-installer-x86pc-gnome`), Plasma (`.#image-installer-x86pc-plasma`). Built natively via `nixpkgs/nixos/modules/installer/cd-dvd/iso-image.nix`, no cross-compilation.

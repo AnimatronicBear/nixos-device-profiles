@@ -27,6 +27,20 @@ services:
         extra-trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
     entrypoint: ./scripts/build.sh
     command: .#image-gnome
+    deploy:
+      resources:
+        limits:
+          cpus: 14
+          memory: 22G
+
+  cat-result:
+    image: nixos/nix:${NIX_IMAGE_VERSION}
+    platform: linux/amd64
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - nix-store:/nix
+    command: cat /nix/store/swdlri39fv9iljhfinl6z9hi5647nnc9-nixos-26.05.20260523.64c08a7-x86_64-linux.iso/iso/nixos-26.05.20260523.64c08a7-x86_64-linux.iso
 
   fmt:
     image: nixos/nix:${NIX_IMAGE_VERSION}

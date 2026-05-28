@@ -74,7 +74,6 @@
           system = "x86_64-linux";
           specialArgs = { inherit settings; };
           modules = [
-            overlayModule
             { nixpkgs.hostPlatform = "x86_64-linux"; }
             home-manager.nixosModules.home-manager
             ./config.nix
