@@ -34,6 +34,17 @@ configuration may be insecure. Use at your own risk.
 | x86_64 PC | Installer (GNOME) | `.#image-installer-x86pc-gnome` | ✗ untested |
 | x86_64 PC | Installer (Plasma) | `.#image-installer-x86pc-plasma` | ✗ untested |
 
+## Device docs
+
+Device-specific build, flash, u-boot, and remote update instructions:
+
+| Device | Doc |
+|--------|-----|
+| PineBookPro (RK3399) | [docs/pinebookpro.md](docs/pinebookpro.md) |
+| PineTab2 (RK3566) | [docs/pinetab2.md](docs/pinetab2.md) |
+| Generic aarch64 SBC | [docs/generic-aarch64.md](docs/generic-aarch64.md) |
+| x86_64 PC installer | [docs/x86pc.md](docs/x86pc.md) |
+
 ## Before building
 
 ### 1. `settings.nix` (gitignored)
@@ -42,117 +53,39 @@ Copy `settings.nix.example` to `settings.nix` and edit — set your `username`,
 `initialPassword`, `authorizedKey`, `ssid`, `psk`, git config, and
 package preferences.
 
-## Building an SD card image
+## Building an image
+
+The [Quick reference](#quick-reference) table below lists every buildable
+output. Builds run inside a Docker container (no host nix-daemon required):
 
 ```shell
-# PineBookPro GNOME (default)
-nix build
-docker compose run build
-
-# PineBookPro Plasma
-nix build .#image-plasma
+docker compose run build                      # PineBookPro GNOME (default)
 docker compose run build .#image-plasma
-
-# PineTab2 GNOME
-nix build .#image-pinetab2-gnome
 docker compose run build .#image-pinetab2-gnome
-
-# PineTab2 Plasma
-nix build .#image-pinetab2-plasma
-docker compose run build .#image-pinetab2-plasma
-
-# PineTab2 Phosh
-nix build .#image-pinetab2-phosh
-docker compose run build .#image-pinetab2-phosh
-
-# Generic aarch64 GNOME
-nix build .#image-generic-aarch64
 docker compose run build .#image-generic-aarch64
-
-# Generic aarch64 installer
-nix build .#image-installer-generic-aarch64
-docker compose run build .#image-installer-generic-aarch64
-```
-
-Installer images (no desktop, for recovery/installation):
-
-```shell
-nix build .#image-installer-pinebookpro
-docker compose run build .#image-installer-pinebookpro
-nix build .#image-installer-pinetab2
-docker compose run build .#image-installer-pinetab2
-```
-
-x86_64 PC installer ISOs (native build, no cross-compilation):
-
-```shell
-nix build .#image-installer-x86pc            # console-only
 docker compose run build .#image-installer-x86pc
-nix build .#image-installer-x86pc-gnome      # with GNOME desktop
-docker compose run build .#image-installer-x86pc-gnome
-nix build .#image-installer-x86pc-plasma     # with Plasma desktop
-docker compose run build .#image-installer-x86pc-plasma
 ```
 
 Flash the result:
 
 ```shell
-# For SD card images (aarch64 Rockchip targets)
+# SD card images (aarch64 ARM targets)
 dd if=result/sd-image/* of=/dev/sdX bs=4M
 
-# For ISO images (x86_64 PC targets)
+# ISO images (x86_64 PC targets)
 dd if=result/iso-image/*.iso of=/dev/sdX bs=4M status=progress
 ```
 
 ## Updating a running system
 
 ```shell
-nixos-rebuild --flake .#PineBookPro switch \
+nixos-rebuild --flake .#<config> switch \
   --target-host user@host \
   --use-remote-sudo --ask-sudo-password
 ```
 
-To target a different device, replace `PineBookPro` with the configuration name (e.g. `PineTab2`, `GenericAarch64`, `PineBookPro-plasma`).
-
-## Installing to eMMC
-
-Boot from SD and dd the image onto the internal storage:
-
-```shell
-dd if=/dev/zero of=/dev/mmcblk0 bs=1M count=16
-dd if=result/sd-image/*.img of=/dev/mmcblk0 bs=4M conv=fsync
-```
-
-## Updating u-boot
-
-The bootloader is not updated by `nixos-rebuild`. To update it, plug the SD
-card into your dev machine:
-
-```shell
-nix build .#uboot              # PineBookPro
-docker compose run build .#uboot
-nix build .#uboot-pinetab2     # PineTab2
-docker compose run build .#uboot-pinetab2
-```
-
-Then write u-boot to the SD card:
-
-```shell
-sudo dd if=$(readlink -f result)/u-boot-rockchip.bin of=/dev/sdX \
-  conv=fsync,notrunc bs=16M seek=32768
-```
-
-(32768 = idbloaderOffset × 512, as defined in
-[nixos-rockchip](https://github.com/nabam/nixos-rockchip/blob/main/modules/sd-card/sd-image-rockchip.nix).)
-
-To flash u-boot to the device's SPI flash (PineBookPro only, not available via Docker):
-
-```shell
-scp result/u-boot-rockchip-spi.bin user@host:
-ssh user@host
-nix-shell -p mtdutils
-flashcp -v -A u-boot-rockchip-spi.bin /dev/mtd0
-```
+Replace `<config>` with the configuration name (e.g. `PineBookPro`,
+`PineTab2`, `GenericAarch64`, `PineBookPro-plasma`).
 
 ## Key packages
 

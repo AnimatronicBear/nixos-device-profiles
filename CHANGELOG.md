@@ -22,6 +22,7 @@
 - `shell.nix` — dev shell with `nixfmt-tree`, `nix-output-monitor`
 - `.envrc` — `use flake` for direnv auto-load
 - `justfile` — aliases for `build`, `check`, `update`, `fmt`, `dev`
+- `docs/pinebookpro.md`, `docs/pinetab2.md`, `docs/generic-aarch64.md`, `docs/x86pc.md` — per-device documentation with build, flash, u-boot, quirks, and related project links
 
 ### Fixed
 - `xdg-desktop-portal-1.20.4` integration tests (`dynamiclauncher`, `notification/sound_fd`) failing during x86 PC installer build — added overlay in `devices/x86pc.nix` to disable tests (they need D-Bus/portal services not present in the sandbox)
