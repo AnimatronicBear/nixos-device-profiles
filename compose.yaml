@@ -27,11 +27,6 @@ services:
         extra-trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nabam-nixos-rockchip.cachix.org-1:BQDltcnV8GS/G86tdvjLwLFz1WeFqSk7O9yl+DR0AVM
     entrypoint: ./scripts/build.sh
     command: .#image-gnome
-    deploy:
-      resources:
-        limits:
-          cpus: 14
-          memory: 22G
 
   cat-result:
     image: nixos/nix:${NIX_IMAGE_VERSION}
