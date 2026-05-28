@@ -20,19 +20,19 @@ configuration may be insecure. Use at your own risk.
 
 ## Supported configurations
 
-| Device | Desktop | Flake attr | Accel matrix |
-|--------|---------|------------|--------------|
-| PineBookPro | GNOME (default) | `.#PineBookPro` / `.#image-gnome` | (none — no sensor) |
-| PineBookPro | Plasma 6 | `.#PineBookPro-plasma` / `.#image-plasma` | (none — no sensor) |
-| PineBookPro | Phosh | `.#PineBookPro-phosh` | (none — no sensor) |
-| PineTab2 | GNOME | `.#PineTab2` / `.#image-pinetab2-gnome` | `1,0,0; 0,0,1; 0,1,0` |
-| PineTab2 | Plasma 6 | `.#PineTab2-plasma` / `.#image-pinetab2-plasma` | `0,0,-1; -1,0,0; 0,1,0` |
-| PineTab2 | Phosh | `.#PineTab2-phosh` | `1,0,0; 0,0,1; 0,1,0` |
-| Generic aarch64 | GNOME | `.#GenericAarch64` / `.#image-generic-aarch64` | (none — no sensor) |
-| Generic aarch64 | Installer | `.#GenericAarch64-installer` / `.#image-installer-generic-aarch64` | N/A — no sensor |
-| x86_64 PC | Installer (console) | `.#image-installer-x86pc` | N/A — no sensor |
-| x86_64 PC | Installer (GNOME) | `.#image-installer-x86pc-gnome` | N/A — no sensor |
-| x86_64 PC | Installer (Plasma) | `.#image-installer-x86pc-plasma` | N/A — no sensor |
+| Device | Desktop | Flake attr | Testing |
+|--------|---------|------------|---------|
+| PineBookPro | GNOME (default) | `.#PineBookPro` / `.#image-gnome` | ✗ untested |
+| PineBookPro | Plasma 6 | `.#PineBookPro-plasma` / `.#image-plasma` | ✗ untested |
+| PineBookPro | Phosh | `.#PineBookPro-phosh` | ✗ untested |
+| PineTab2 | GNOME | `.#PineTab2` / `.#image-pinetab2-gnome` | ✗ untested |
+| PineTab2 | Plasma 6 | `.#PineTab2-plasma` / `.#image-pinetab2-plasma` | ✗ untested |
+| PineTab2 | Phosh | `.#PineTab2-phosh` | ✗ untested |
+| Generic aarch64 | GNOME | `.#GenericAarch64` / `.#image-generic-aarch64` | ✗ untested |
+| Generic aarch64 | Installer | `.#GenericAarch64-installer` / `.#image-installer-generic-aarch64` | ✗ untested |
+| x86_64 PC | Installer (console) | `.#image-installer-x86pc` | ✗ untested |
+| x86_64 PC | Installer (GNOME) | `.#image-installer-x86pc-gnome` | ✗ untested |
+| x86_64 PC | Installer (Plasma) | `.#image-installer-x86pc-plasma` | ✗ untested |
 
 ## Before building
 
