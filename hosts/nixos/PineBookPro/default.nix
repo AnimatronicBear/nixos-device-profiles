@@ -9,7 +9,7 @@
 {
   imports = [ rockchip.nixosModules.noZFS ];
   networking.hostName = "PineBookPro";
-  rockchip.uBoot = rockchip.packages.${buildPlatform}.uBootPinebookPro;
+  rockchip.uBoot = pkgs.ubootPinebookPro;
   boot.kernelPackages = rockchip.legacyPackages.${buildPlatform}.kernel_linux_latest_rockchip_stable;
   boot.kernelParams = [
     "console=tty0"
@@ -19,7 +19,12 @@
     "rw"
   ];
   hardware.firmware = [ rockchip.packages.${buildPlatform}.brcm43456 ];
-  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [ "brcmfmac-firmware" ];
+  nixpkgs.config.allowUnfreePredicate =
+    pkg:
+    builtins.elem (lib.getName pkg) [
+      "arm-trusted-firmware-rk3399"
+      "brcmfmac-firmware"
+    ];
   nix.settings = {
     extra-substituters = [ "https://nabam-nixos-rockchip.cachix.org" ];
     extra-trusted-public-keys = [

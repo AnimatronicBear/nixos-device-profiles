@@ -2,6 +2,23 @@
 
 ## [unreleased]
 
+### Added
+- Cross-compilation overlays for PineBook Pro aarch64 builds:
+  - `arcmenu` — added `glib` and `gitMinimal` to nativeBuildInputs
+  - `gexiv2` — disabled gtk_doc to avoid gi-docgen target dependency
+  - `git` — added build platform C compiler for Rust build scripts
+  - `gom` — added `python3` to nativeBuildInputs
+  - `gupnp-av` — disabled gtk_doc during cross-compilation
+  - `libglycin` — set `CARGO_BUILD_TARGET=aarch64-unknown-linux-gnu` for meson/cargo cross-compilation
+  - `pysmbc` — symlink `pkg-config` to cross-compilation wrapper for setup.py
+
+### Fixed
+- PineBookPro uBoot reference — use `pkgs.ubootPinebookPro` instead of `rockchip.packages.${buildPlatform}.uBootPinebookPro`
+- PineBookPro `allowUnfreePredicate` — added `arm-trusted-firmware-rk3399` to allowed unfree packages
+
+### Changed
+- `compose.yaml` — tuned build resource allocation: `max-jobs=2`, `cores=16` for build/check services; `max-jobs=4`, `cores=0` for fmt/dev
+
 ### Changed
 - Restructured to EmergentMind/nix-config-starter layout:
   - `config.nix` → `hosts/common/core/default.nix`
