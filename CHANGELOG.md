@@ -19,6 +19,23 @@
 ### Changed
 - `compose.yaml` — tuned build resource allocation: `max-jobs=2`, `cores=16` for build/check services; `max-jobs=4`, `cores=0` for fmt/dev
 
+### Added
+- **Install profiles** — composable NixOS modules in `profiles/` that bundle packages, services, and config per use-case:
+  - `profiles/base/default.nix` — curl, wget, htop, git, tmux, vim
+  - `profiles/development/default.nix` — gcc, clang, llvm, cmake, python3, nodejs, rust, cargo, postgresql (imports base)
+  - `profiles/minimal/default.nix` — curl, git
+  - Profiles are full NixOS modules, stackable, and can set any option including home-manager
+  - Each profile can have an optional companion `secrets.nix` file (gitignored) for API tokens and credentials
+- **Per-node secrets** — `settings.nix` restructured with `Common` defaults and `nodes.<name>` overrides for per-device SSH keys, WiFi credentials, and passwords
+- `lib/default.nix` — all 5 builders accept `profileModules` (list of profile paths) and `configName` (for per-node settings resolution); loadSecrets helper auto-loads `secrets.nix` companions from each profile directory and passes merged `secrets` via `specialArgs`
+- `.#image-dev` — PineBookPro GNOME + base + development profile SD image
+- `.#checks.x86_64-linux.PineBookPro-dev` — eval check for dev profile variant
+- `.gitignore` pattern `profiles/*.secret.nix` → `profiles/*/secrets.nix` for subdirectory secrets
+
+### Changed
+- Profile files restructured from flat `.nix` files to subdirectories: `profiles/<name>/default.nix` with companion `secrets.nix` and `secrets.nix.example` in the same directory
+- `lib/default.nix` `loadSecrets` — changed from `removeSuffix ".nix" + ".secret.nix"` to `dirOf + "/secrets.nix"`
+
 ### Changed
 - Restructured to EmergentMind/nix-config-starter layout:
   - `config.nix` → `hosts/common/core/default.nix`

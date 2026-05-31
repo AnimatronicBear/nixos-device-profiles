@@ -1,13 +1,56 @@
 {
-  username = "user";
-  stateVersion = "25.11";
-  gitUserName = "Your Name";
-  gitUserEmail = "your@email.com";
-  extraSystemPackages = [ "git" "htop" ];
-  extraUserPackages = [ "librewolf" "ungoogled-chromium" "vscodium" ];
-  hostName = "x86pc";
-  initialPassword = "changeme";
-  authorizedKey = "ssh-ed25519 AAAA... your-public-key-here";
-  ssid = "my-network";
-  psk = "my-password";
+  # === Shared config (inherited by all nodes if not overridden) ===
+  Common = {
+    username = "user";
+    stateVersion = "25.11";
+    gitUserName = "Your Name";
+    gitUserEmail = "your@email.com";
+    extraSystemPackages = [ "git" "htop" ];
+    extraUserPackages = [ "librewolf" "ungoogled-chromium" "vscodium" ];
+  };
+
+  # === Per-node overrides (keyed by the value passed as configName to the builder) ===
+  nodes = {
+    PineBookPro = {
+      hostName = "pinebookpro";
+      initialPassword = "changeme";
+      authorizedKey = "ssh-ed25519 AAAA... your-pinebookpro-key";
+      ssid = "my-network";
+      psk = "my-password";
+    };
+    PineTab2 = {
+      hostName = "pinetab2";
+      initialPassword = "changeme";
+      authorizedKey = "ssh-ed25519 AAAA... your-pinetab2-key";
+      ssid = "my-network";
+      psk = "my-password";
+    };
+    GenericAarch64 = {
+      hostName = "generic";
+      initialPassword = "changeme";
+      authorizedKey = "ssh-ed25519 AAAA... your-generic-key";
+      ssid = "my-network";
+      psk = "my-password";
+    };
+    GenericAarch64-installer = {
+      hostName = "generic";
+      initialPassword = "changeme";
+      authorizedKey = "ssh-ed25519 AAAA... your-generic-key";
+    };
+    x86pc = {
+      hostName = "x86pc";
+      initialPassword = "changeme";
+      authorizedKey = "ssh-ed25519 AAAA... your-desktop-key";
+    };
+    x86pc-gnome = {
+      hostName = "x86pc";
+      initialPassword = "changeme";
+      authorizedKey = "ssh-ed25519 AAAA... your-desktop-key";
+    };
+    x86pc-plasma = {
+      hostName = "x86pc";
+      initialPassword = "changeme";
+      authorizedKey = "ssh-ed25519 AAAA... your-desktop-key";
+    };
+  };
 }

@@ -14,6 +14,7 @@ x86_64 installer ISOs built natively.
 | `.#PineBookPro` / `.#image-gnome` | GNOME (default) | GDM  | `1,0,0; 0,0,1; 0,1,0` |
 | `.#PineBookPro-plasma` / `.#image-plasma` | Plasma 6 | SDDM (Wayland) | `0,0,-1; -1,0,0; 0,1,0` |
 | `.#PineBookPro-phosh` | Phosh   | phosh           | `1,0,0; 0,0,1; 0,1,0` |
+| `.#PineBookPro-dev` / `.#image-dev` | GNOME + dev profile | GDM | `1,0,0; 0,0,1; 0,1,0` |
 | `.#GenericAarch64` / `.#image-generic-aarch64` | GNOME | GDM | (none) |
 | `.#image-installer-x86pc` | Console installer | — | N/A |
 | `.#image-installer-x86pc-gnome` | GNOME installer | GDM | N/A |
@@ -32,6 +33,7 @@ change `initialPassword`, `authorizedKey`, `ssid`, `psk`, `username`, etc.
 | Build SD image (Plasma) | `nix build .#image-plasma` |
 | Build installer image (PineTab2) | `nix build .#image-installer-pinetab2` |
 | Build generic aarch64 image | `nix build .#image-generic-aarch64` |
+| Build dev profile image | `nix build .#image-dev` |
 | Build x86_64 ISO (console) | `nix build .#image-installer-x86pc` |
 | Build x86_64 ISO (GNOME) | `nix build .#image-installer-x86pc-gnome` |
 | Build x86_64 ISO (Plasma) | `nix build .#image-installer-x86pc-plasma` |
@@ -53,6 +55,7 @@ Each variant has a fast eval-only check that asserts ~9 option values (hostname,
 | GNOME check | `nix build .#checks.x86_64-linux.PineBookPro-gnome` |
 | Plasma check | `nix build .#checks.x86_64-linux.PineBookPro-plasma` |
 | Phosh check | `nix build .#checks.x86_64-linux.PineBookPro-phosh` |
+| Dev profile check | `nix build .#checks.x86_64-linux.PineBookPro-dev` |
 | Generic aarch64 check | `nix build .#checks.x86_64-linux.generic-aarch64-gnome` |
 | x86_64 console check | `nix build .#checks.x86_64-linux.x86pc` |
 | x86_64 GNOME check | `nix build .#checks.x86_64-linux.x86pc-gnome` |
@@ -76,6 +79,8 @@ hosts/
     GenericAarch64/    — generic extlinux-booting aarch64 SBC (no Rockchip)
     X86Pc/             — x86_64 PC installer (ISO image)
 home/_username_/common/core/default.nix  — home-manager config
+profiles/               — composable install profiles (base, development, minimal)
+profiles/*/secrets.nix  — gitignored per-profile secrets (API tokens, credentials)
 checks.nix             — eval-only option assertions
 packages.nix           — flake package definitions
 overlays/              — cross-compilation fixes
@@ -97,4 +102,6 @@ overlays/              — cross-compilation fixes
 - **PCIe overlay** (`dtOverlayPCIeFix`) is applied to PineTab2 for RK3566 PCIe fix.
 - **Installer images** (`.#image-installer-*`) build minimal recovery SD images (no desktop, no home-manager) for ARM targets, and standard NixOS ISOs for x86_64 PC targets.
 - **Docker compose** (`compose.yaml`) runs nix build/check in a container for environments without nix-daemon.
-- **`.gitignore`** ignores `/result`, `settings.nix`, and `.env`.
+- **`.gitignore`** ignores `/result`, `settings.nix`, `.env`, and `profiles/*/secrets.nix`.
+- **Profiles** are composable NixOS modules in `profiles/<name>/default.nix`. Stack them in `flake.nix` via `profileModules` builder argument. Each profile can have an optional `secrets.nix` companion in the same directory (gitignored) — secrets are auto-loaded and merged into a `secrets` specialArg.
+- **Per-node settings** — `settings.nix` supports `Common` + `nodes.<name>` structure. Pass `configName` to the builder to resolve per-node overrides. Backward-compatible: flat `settings.nix` works when `nodes` attr is absent.

@@ -39,6 +39,14 @@
           settings
           ;
       };
+
+      # Shorthand: no profiles, no per-node override
+      base = dr: dt: myLib.rockchipOsConfigAarch64 "x86_64-linux" dr dt [ ] null;
+
+      # Shorthand: with profiles, no per-node override
+      baseWithProfiles =
+        dr: dt: profiles:
+        myLib.rockchipOsConfigAarch64 "x86_64-linux" dr dt profiles null;
     in
     {
       nixConfig = {
@@ -55,28 +63,23 @@
       };
 
       nixosConfigurations = {
-        PineBookPro =
-          myLib.rockchipOsConfigAarch64 "x86_64-linux" ./hosts/nixos/PineBookPro
-            ./hosts/common/optional/gnome.nix;
-        PineBookPro-plasma =
-          myLib.rockchipOsConfigAarch64 "x86_64-linux" ./hosts/nixos/PineBookPro
-            ./hosts/common/optional/plasma.nix;
-        PineBookPro-phosh =
-          myLib.rockchipOsConfigAarch64 "x86_64-linux" ./hosts/nixos/PineBookPro
-            ./hosts/common/optional/phosh.nix;
-        PineTab2 =
-          myLib.rockchipOsConfigAarch64 "x86_64-linux" ./hosts/nixos/PineTab2
-            ./hosts/common/optional/gnome.nix;
-        PineTab2-plasma =
-          myLib.rockchipOsConfigAarch64 "x86_64-linux" ./hosts/nixos/PineTab2
-            ./hosts/common/optional/plasma.nix;
-        PineTab2-phosh =
-          myLib.rockchipOsConfigAarch64 "x86_64-linux" ./hosts/nixos/PineTab2
-            ./hosts/common/optional/phosh.nix;
+        PineBookPro = base ./hosts/nixos/PineBookPro ./hosts/common/optional/gnome.nix;
+        PineBookPro-plasma = base ./hosts/nixos/PineBookPro ./hosts/common/optional/plasma.nix;
+        PineBookPro-phosh = base ./hosts/nixos/PineBookPro ./hosts/common/optional/phosh.nix;
+        PineBookPro-dev = baseWithProfiles ./hosts/nixos/PineBookPro ./hosts/common/optional/gnome.nix [
+          ./profiles/base/default.nix
+          ./profiles/development/default.nix
+        ];
+        PineTab2 = base ./hosts/nixos/PineTab2 ./hosts/common/optional/gnome.nix;
+        PineTab2-plasma = base ./hosts/nixos/PineTab2 ./hosts/common/optional/plasma.nix;
+        PineTab2-phosh = base ./hosts/nixos/PineTab2 ./hosts/common/optional/phosh.nix;
         GenericAarch64 =
-          myLib.osConfigAarch64 "x86_64-linux" ./hosts/nixos/GenericAarch64
-            ./hosts/common/optional/gnome.nix;
-        GenericAarch64-installer = myLib.installerConfigAarch64 "x86_64-linux" ./hosts/nixos/GenericAarch64;
+          myLib.osConfigAarch64 "x86_64-linux" ./hosts/nixos/GenericAarch64 ./hosts/common/optional/gnome.nix
+            [ ]
+            null;
+        GenericAarch64-installer =
+          myLib.installerConfigAarch64 "x86_64-linux" ./hosts/nixos/GenericAarch64 [ ]
+            null;
       };
     }
     // utils.lib.eachDefaultSystem (

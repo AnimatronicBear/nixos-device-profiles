@@ -25,6 +25,7 @@ configuration may be insecure. Use at your own risk.
 | PineBookPro | GNOME (default) | `.#PineBookPro` / `.#image-gnome` | ✗ untested |
 | PineBookPro | Plasma 6 | `.#PineBookPro-plasma` / `.#image-plasma` | ✗ untested |
 | PineBookPro | Phosh | `.#PineBookPro-phosh` | ✗ untested |
+| PineBookPro | GNOME + dev profile | `.#PineBookPro-dev` / `.#image-dev` | ✗ untested |
 | PineTab2 | GNOME | `.#PineTab2` / `.#image-pinetab2-gnome` | ✗ untested |
 | PineTab2 | Plasma 6 | `.#PineTab2-plasma` / `.#image-pinetab2-plasma` | ✗ untested |
 | PineTab2 | Phosh | `.#PineTab2-phosh` | ✗ untested |
@@ -101,6 +102,65 @@ browser settings) are managed by
 [home-manager](https://github.com/nix-community/home-manager) in
 `home/_username_/common/core/default.nix`.
 
+### Per-node secrets
+
+`settings.nix` supports a `Common` + `nodes` structure for per-device secrets:
+
+```nix
+{
+  Common = { username = "bear"; stateVersion = "25.11"; };
+  nodes = {
+    PineBookPro = { hostName = "rotarran"; authorizedKey = "ssh-ed25519 ..."; };
+    PineTab2    = { hostName = "tabby";    authorizedKey = "ssh-ed25519 ..."; };
+  };
+}
+```
+
+When `configName` is passed to the builder (e.g. `"PineBookPro"`), the
+corresponding node overrides are merged over `Common`. If no `nodes` attr
+exists, `settings.nix` works as a flat attrset (backward compatible).
+
+## Profiles
+
+Composable NixOS modules in `profiles/` that bundle packages and config
+for specific use-cases. Stack multiple profiles on one build:
+
+```nix
+# flake.nix
+PineBookPro-dev = myLib.rockchipOsConfigAarch64 "x86_64-linux"
+  ./hosts/nixos/PineBookPro ./hosts/common/optional/gnome.nix
+  [ ./profiles/base.nix ./profiles/development.nix ] null;
+```
+
+| Profile | Contents |
+|---------|----------|
+| `profiles/base.nix` | curl, wget, htop, git, tmux, vim |
+| `profiles/development.nix` | gcc, clang, llvm, cmake, python3, nodejs, rust, postgresql |
+| `profiles/minimal.nix` | curl, git |
+
+### Profile secrets
+
+Each profile can have an optional `.secret.nix` companion (gitignored):
+
+```nix
+# profiles/development.secret.nix
+{ githubToken = "ghp_..."; npmToken = "npm_..."; }
+```
+
+The builder auto-loads and merges all profile `.secret.nix` files, then
+passes the result as a `secrets` specialArg to all NixOS and home-manager
+modules. Profile modules access secrets gracefully:
+
+```nix
+{ pkgs, lib, secrets, ... }: {
+  environment.variables.API_TOKEN =
+    lib.mkIf (secrets ? apiToken) secrets.apiToken;
+}
+```
+
+Template files (`.secret.nix.example`) are tracked in git — copy to
+`.secret.nix` and fill in real values.
+
 ## Binary cache
 
 The flake uses `nabam-nixos-rockchip.cachix.org` for pre-built kernels,
@@ -167,6 +227,7 @@ docker compose run fmt
 | Action | nix command | Docker compose |
 |--------|-------------|----------------|
 | Build image (PineBookPro GNOME) | `nix build` | `docker compose run build` |
+| Build image (PineBookPro dev profile) | `nix build .#image-dev` | `docker compose run build .#image-dev` |
 | Build image (PineTab2 GNOME) | `nix build .#image-pinetab2-gnome` | `docker compose run build .#image-pinetab2-gnome` |
 | Build image (generic aarch64) | `nix build .#image-generic-aarch64` | `docker compose run build .#image-generic-aarch64` |
 | Build installer (PineBookPro) | `nix build .#image-installer-pinebookpro` | `docker compose run build .#image-installer-pinebookpro` |

@@ -4,6 +4,7 @@
     lib,
     config,
     settings,
+    secrets ? { },
     ...
   }:
   {
@@ -125,7 +126,7 @@
     home-manager = {
       useGlobalPkgs = true;
       useUserPackages = true;
-      extraSpecialArgs = { inherit settings; };
+      extraSpecialArgs = { inherit settings secrets; };
       users.${settings.username} = import ../../../home/_username_/common/core/default.nix;
     };
   }

@@ -32,7 +32,7 @@ let
   mkCheck =
     device: hostModule: desktopFile: desktopName:
     let
-      cfg = (myLib.rockchipOsConfigAarch64 system hostModule desktopFile).config;
+      cfg = (myLib.rockchipOsConfigAarch64 system hostModule desktopFile [ ] null).config;
       hwdb = cfg.services.udev.extraHwdb or "";
       accelMatrices = {
         gnome = "1, 0, 0; 0, 0, 1; 0, 1, 0";
@@ -97,8 +97,9 @@ let
     desktopName:
     let
       cfg =
-        (myLib.osConfigAarch64 system ./hosts/nixos/GenericAarch64 ./hosts/common/optional/gnome.nix)
-        .config;
+        (myLib.osConfigAarch64 system ./hosts/nixos/GenericAarch64 ./hosts/common/optional/gnome.nix [ ]
+          null
+        ).config;
     in
     pkgs.runCommand "check-generic-aarch64-${desktopName}" { } ''
       ${assertEq cfg.system.stateVersion "25.11" "stateVersion"}
@@ -116,7 +117,7 @@ let
   mkCheckX86 =
     desktopFile: desktopName:
     let
-      cfg = (myLib.installerConfigX86 desktopFile).config;
+      cfg = (myLib.installerConfigX86 desktopFile [ ] null).config;
     in
     pkgs.runCommand "check-x86pc-${desktopName}" { } ''
       ${assertEq cfg.networking.hostName "x86pc" "hostName"}
@@ -145,6 +146,32 @@ let
       }
       touch $out
     '';
+
+  mkCheckProfileDev =
+    let
+      cfg =
+        (myLib.rockchipOsConfigAarch64 system ./hosts/nixos/PineBookPro ./hosts/common/optional/gnome.nix [
+          ./profiles/base/default.nix
+          ./profiles/development/default.nix
+        ] null).config;
+    in
+    pkgs.runCommand "check-PineBookPro-dev" { } ''
+      ${assertEq cfg.networking.hostName "PineBookPro" "hostName"}
+      ${assertEq cfg.system.stateVersion "25.11" "stateVersion"}
+      ${assertTrue cfg.services.pipewire.enable "pipewire"}
+      ${assertEq (cfg.environment.sessionVariables.MOZ_ENABLE_WAYLAND or "") "1" "MOZ_ENABLE_WAYLAND"}
+      ${assertFalse cfg.services.openssh.settings.PasswordAuthentication "PasswordAuthentication"}
+      ${assertFalse (cfg.hardware.sensor.iio.enable or false) "iio"}
+      ${assertTrue cfg.services.desktopManager.gnome.enable "gnome"}
+      ${assertTrue cfg.services.displayManager.gdm.enable "gdm"}
+      ${assertNoAttr (cfg.systemd.services or { }) "landscape" "landscape"}
+      ${assertEq (cfg.services.udev.extraHwdb or "") "" "extraHwdb"}
+      ${assertTrue (builtins.any (
+        p: lib.getName p == "gcc-wrapper"
+      ) cfg.environment.systemPackages) "gcc"}
+      ${assertTrue (builtins.any (p: lib.getName p == "git") cfg.environment.systemPackages) "git"}
+      touch $out
+    '';
 in
 {
   PineBookPro-gnome =
@@ -169,4 +196,5 @@ in
   x86pc = mkCheckX86 { } "console";
   x86pc-gnome = mkCheckX86 ./hosts/common/optional/gnome.nix "gnome";
   x86pc-plasma = mkCheckX86 ./hosts/common/optional/plasma.nix "plasma";
+  PineBookPro-dev = mkCheckProfileDev;
 }
