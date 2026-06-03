@@ -30,11 +30,11 @@
   nix.settings = {
     extra-substituters = [
       "https://cache.nixos.org"
-      "https://nabam-nixos-rockchip.cachix.org"
+      # "https://nabam-nixos-rockchip.cachix.org"
     ];
     extra-trusted-public-keys = [
       "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-      "nabam-nixos-rockchip.cachix.org-1:BQDltcnV8GS/G86tdvjLwLFz1WeFqSk7O9yl+DR0AVM"
+      # "nabam-nixos-rockchip.cachix.org-1:BQDltcnV8GS/G86tdvjLwLFz1WeFqSk7O9yl+DR0AVM"
     ];
   };
 }
