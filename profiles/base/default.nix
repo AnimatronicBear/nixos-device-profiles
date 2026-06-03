@@ -7,5 +7,8 @@
     git
     tmux
     vim
+    btop
+    librewolf
+    ungoogled-chromium
   ];
 }
