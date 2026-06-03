@@ -77,12 +77,18 @@
           myLib.osConfigAarch64 "x86_64-linux" ./hosts/nixos/GenericAarch64 ./hosts/common/optional/gnome.nix
             [ ]
             null;
-        GenericAarch64BotanyBay =
+        Aarch64LUKSBotanyBay =
+          myLib.osConfigAarch64 "aarch64-linux" ./hosts/nixos/Aarch64LUKS ./hosts/common/optional/gnome.nix
+            [
+              ./profiles/botany-bay/default.nix
+            ]
+            "Aarch64LUKSBotanyBay";
+        CCGenericAarch64BotanyBay =
           myLib.osConfigAarch64 "x86_64-linux" ./hosts/nixos/GenericAarch64 ./hosts/common/optional/gnome.nix
             [
               ./profiles/botany-bay/default.nix
-            ]   
-            null;
+            ]
+            "CCGenericAarch64BotanyBay";
         GenericAarch64-installer =
           myLib.installerConfigAarch64 "x86_64-linux" ./hosts/nixos/GenericAarch64 [ ]
             null;

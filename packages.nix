@@ -47,11 +47,14 @@ let
     (myLib.osConfigAarch64 system ./hosts/nixos/GenericAarch64 ./hosts/common/optional/gnome.nix [ ]
       null
     ).config.system.build.sdImage;
-  image-generic-aarch64-botany-bay =
+  image-cc-generic-aarch64-botany-bay =
     (myLib.osConfigAarch64 system ./hosts/nixos/GenericAarch64 ./hosts/common/optional/gnome.nix [
       ./profiles/botany-bay/default.nix
-    ] null
-    ).config.system.build.sdImage;
+    ] "CCGenericAarch64BotanyBay").config.system.build.sdImage;
+  image-aarch64-luks-botany-bay =
+    (myLib.osConfigAarch64 system ./hosts/nixos/Aarch64LUKS ./hosts/common/optional/gnome.nix [
+      ./profiles/botany-bay/default.nix
+    ] "Aarch64LUKSBotanyBay").config.system.build.sdImage;
   image-installer-generic-aarch64 =
     (myLib.installerConfigAarch64 system ./hosts/nixos/GenericAarch64 [ ] null)
     .config.system.build.sdImage;
@@ -79,6 +82,8 @@ in
     image-installer-pinebookpro
     image-installer-pinetab2
     image-generic-aarch64
+    image-cc-generic-aarch64-botany-bay
+    image-aarch64-luks-botany-bay
     image-installer-generic-aarch64
     image-dev
     image-installer-x86pc
