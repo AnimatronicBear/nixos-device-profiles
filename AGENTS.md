@@ -9,16 +9,21 @@ NixOS flake for **PineBookPro** (RK3399 laptop), **PineTab2** (RK3566 tablet),
 ARM targets cross-compiled from x86_64 → aarch64-linux.
 x86_64 installer ISOs built natively.
 
-| Flake attr            | Desktop | Display manager | Accel matrix                   |
-|-----------------------|---------|-----------------|--------------------------------|
-| `.#PineBookPro` / `.#image-gnome` | GNOME (default) | GDM  | `1,0,0; 0,0,1; 0,1,0` |
-| `.#PineBookPro-plasma` / `.#image-plasma` | Plasma 6 | SDDM (Wayland) | `0,0,-1; -1,0,0; 0,1,0` |
-| `.#PineBookPro-phosh` | Phosh   | phosh           | `1,0,0; 0,0,1; 0,1,0` |
-| `.#PineBookPro-dev` / `.#image-dev` | GNOME + dev profile | GDM | `1,0,0; 0,0,1; 0,1,0` |
-| `.#GenericAarch64` / `.#image-generic-aarch64` | GNOME | GDM | (none) |
-| `.#image-installer-x86pc` | Console installer | — | N/A |
-| `.#image-installer-x86pc-gnome` | GNOME installer | GDM | N/A |
-| `.#image-installer-x86pc-plasma` | Plasma installer | SDDM | N/A |
+| nixosConfiguration       | Package (image)           | Desktop | Display manager | Accel matrix |
+|--------------------------|---------------------------|---------|-----------------|--------------|
+| `.#pinebookpro-gnome`    | `.#image-pinebookpro-gnome`     | GNOME (default) | GDM | `1,0,0; 0,0,1; 0,1,0` |
+| `.#pinebookpro-plasma`   | `.#image-pinebookpro-plasma`    | Plasma 6 | SDDM (Wayland) | `0,0,-1; -1,0,0; 0,1,0` |
+| `.#pinebookpro-phosh`    | —                           | Phosh   | phosh         | `1,0,0; 0,0,1; 0,1,0` |
+| `.#pinebookpro-dev`      | `.#image-pinebookpro-dev`       | GNOME + dev profile | GDM | `1,0,0; 0,0,1; 0,1,0` |
+| `.#pinebookpro-installer`| `.#image-pinebookpro-installer` | —       | —             | N/A |
+| `.#pinetab2-gnome`       | `.#image-pinetab2-gnome`        | GNOME   | GDM | (see device module) |
+| `.#pinetab2-plasma`      | `.#image-pinetab2-plasma`       | Plasma 6 | SDDM (Wayland) | (see device module) |
+| `.#pinetab2-phosh`       | —                           | Phosh   | phosh         | (see device module) |
+| `.#pinetab2-installer`   | `.#image-pinetab2-installer`    | —       | —             | N/A |
+| `.#generic-aarch64-gnome`| `.#image-generic-aarch64-gnome` | GNOME   | GDM | (none) |
+| `.#x86pc`                | `.#image-x86pc`                 | Console installer | — | N/A |
+| `.#x86pc-gnome`          | `.#image-x86pc-gnome`           | GNOME installer | GDM | N/A |
+| `.#x86pc-plasma`         | `.#image-x86pc-plasma`          | Plasma installer | SDDM | N/A |
 
 ## Before building
 
@@ -29,20 +34,20 @@ change `initialPassword`, `authorizedKey`, `ssid`, `psk`, `username`, etc.
 
 | Action | Command |
 |--------|---------|
-| Build SD image (GNOME) | `nix build` |
-| Build SD image (Plasma) | `nix build .#image-plasma` |
-| Build installer image (PineTab2) | `nix build .#image-installer-pinetab2` |
-| Build generic aarch64 image | `nix build .#image-generic-aarch64` |
-| Build dev profile image | `nix build .#image-dev` |
-| Build x86_64 ISO (console) | `nix build .#image-installer-x86pc` |
-| Build x86_64 ISO (GNOME) | `nix build .#image-installer-x86pc-gnome` |
-| Build x86_64 ISO (Plasma) | `nix build .#image-installer-x86pc-plasma` |
+| Build SD image (PineBookPro GNOME) | `nix build` |
+| Build SD image (PineBookPro Plasma) | `nix build .#image-pinebookpro-plasma` |
+| Build SD image (PineTab2 GNOME) | `nix build .#image-pinetab2-gnome` |
+| Build generic aarch64 GNOME image | `nix build .#image-generic-aarch64-gnome` |
+| Build dev profile image | `nix build .#image-pinebookpro-dev` |
+| Build x86_64 ISO (console) | `nix build .#image-x86pc` |
+| Build x86_64 ISO (GNOME) | `nix build .#image-x86pc-gnome` |
+| Build x86_64 ISO (Plasma) | `nix build .#image-x86pc-plasma` |
 | Build u-boot only | `nix build .#uboot` |
 | Docker compose check | `docker compose run check` |
 | Docker compose build | `docker compose run build` |
 | Docker compose shell | `docker compose run dev` |
 | Flash SD card | `dd if=result/sd-image/* of=/dev/sdX bs=4M` |
-| Remote update | `nixos-rebuild --flake .#PineBookPro switch --target-host user@host --use-remote-sudo --ask-sudo-password` |
+| Remote update | `nixos-rebuild --flake .#pinebookpro-gnome switch --target-host user@host --use-remote-sudo --ask-sudo-password` |
 | Flash u-boot to SD | `dd if=<store-path>/u-boot-rockchip.bin of=/dev/sdX conv=fsync,notrunc bs=16M seek=32768` |
 
 ## Checks
@@ -52,10 +57,10 @@ Each variant has a fast eval-only check that asserts ~9 option values (hostname,
 | Action | Command |
 |--------|---------|
 | Run all checks | `nix flake check` |
-| GNOME check | `nix build .#checks.x86_64-linux.PineBookPro-gnome` |
-| Plasma check | `nix build .#checks.x86_64-linux.PineBookPro-plasma` |
-| Phosh check | `nix build .#checks.x86_64-linux.PineBookPro-phosh` |
-| Dev profile check | `nix build .#checks.x86_64-linux.PineBookPro-dev` |
+| GNOME check | `nix build .#checks.x86_64-linux.pinebookpro-gnome` |
+| Plasma check | `nix build .#checks.x86_64-linux.pinebookpro-plasma` |
+| Phosh check | `nix build .#checks.x86_64-linux.pinebookpro-phosh` |
+| Dev profile check | `nix build .#checks.x86_64-linux.pinebookpro-dev` |
 | Generic aarch64 check | `nix build .#checks.x86_64-linux.generic-aarch64-gnome` |
 | x86_64 console check | `nix build .#checks.x86_64-linux.x86pc` |
 | x86_64 GNOME check | `nix build .#checks.x86_64-linux.x86pc-gnome` |
@@ -64,8 +69,11 @@ Each variant has a fast eval-only check that asserts ~9 option values (hostname,
 ## Structure
 
 ```
-flake.nix              — thin: delegates to lib/, hosts/, checks.nix
-lib/default.nix        — builder functions (rockchipOsConfigAarch64, osConfigAarch64, etc.)
+flake.nix              — thin: delegates to lib/, hosts/, variants/
+lib/
+  default.nix          — builder functions (rockchipOsConfigAarch64, osConfigAarch64, etc.)
+  fromVariant.nix      — variant auto-discovery, builder dispatch, check generation
+variants/              — one .nix file per build target (host + desktop + profiles + platform + buildType)
 hosts/
   common/
     core/default.nix   — shared NixOS baseline (stateVersion, users, SSH, pipewire, etc.)
@@ -78,11 +86,10 @@ hosts/
     PineTab2/          — device module (uBoot, kernel, firmware, IIO, landscape)
     GenericAarch64/    — generic extlinux-booting aarch64 SBC (no Rockchip)
     X86Pc/             — x86_64 PC installer (ISO image)
+    Aarch64LUKS/       — aarch64 with LUKS + FIDO2 + systemd-boot (e.g. botany-bay)
 home/_username_/common/core/default.nix  — home-manager config
-profiles/               — composable install profiles (base, development, minimal)
-profiles/*/secrets.nix  — gitignored per-profile secrets (API tokens, credentials)
-checks.nix             — eval-only option assertions
-packages.nix           — flake package definitions
+profiles/              — composable profiles (base, development, minimal, botany-bay)
+profiles/*/secrets.nix — gitignored per-profile secrets (API tokens, credentials)
 overlays/              — cross-compilation fixes
 ```
 

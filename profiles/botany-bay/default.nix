@@ -9,7 +9,6 @@ let
 in
 {
   imports = [
-    ./hardware-configuration.nix
     ../base/default.nix
     ../development/default.nix
   ];

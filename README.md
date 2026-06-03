@@ -20,20 +20,24 @@ configuration may be insecure. Use at your own risk.
 
 ## Supported configurations
 
-| Device | Desktop | Flake attr | Testing |
-|--------|---------|------------|---------|
-| PineBookPro | GNOME (default) | `.#PineBookPro` / `.#image-gnome` | ✗ untested |
-| PineBookPro | Plasma 6 | `.#PineBookPro-plasma` / `.#image-plasma` | ✗ untested |
-| PineBookPro | Phosh | `.#PineBookPro-phosh` | ✗ untested |
-| PineBookPro | GNOME + dev profile | `.#PineBookPro-dev` / `.#image-dev` | ✗ untested |
-| PineTab2 | GNOME | `.#PineTab2` / `.#image-pinetab2-gnome` | ✗ untested |
-| PineTab2 | Plasma 6 | `.#PineTab2-plasma` / `.#image-pinetab2-plasma` | ✗ untested |
-| PineTab2 | Phosh | `.#PineTab2-phosh` | ✗ untested |
-| Generic aarch64 | GNOME | `.#GenericAarch64` / `.#image-generic-aarch64` | ✗ untested |
-| Generic aarch64 | Installer | `.#GenericAarch64-installer` / `.#image-installer-generic-aarch64` | ✗ untested |
-| x86_64 PC | Installer (console) | `.#image-installer-x86pc` | ✗ untested |
-| x86_64 PC | Installer (GNOME) | `.#image-installer-x86pc-gnome` | ✗ untested |
-| x86_64 PC | Installer (Plasma) | `.#image-installer-x86pc-plasma` | ✗ untested |
+| Device | Desktop | nixosConfiguration | Package (image) |
+|--------|---------|-------------------|-----------------|
+| PineBookPro | GNOME | `.#nixosConfigurations.pinebookpro-gnome` | `.#image-pinebookpro-gnome` |
+| PineBookPro | Plasma 6 | `.#pinebookpro-plasma` | `.#image-pinebookpro-plasma` |
+| PineBookPro | Phosh | `.#pinebookpro-phosh` | `.#image-pinebookpro-phosh` |
+| PineBookPro | GNOME + dev profile | `.#pinebookpro-dev` | `.#image-pinebookpro-dev` |
+| PineBookPro | Installer | `.#pinebookpro-installer` | `.#image-pinebookpro-installer` |
+| PineTab2 | GNOME | `.#pinetab2-gnome` | `.#image-pinetab2-gnome` |
+| PineTab2 | Plasma 6 | `.#pinetab2-plasma` | `.#image-pinetab2-plasma` |
+| PineTab2 | Phosh | `.#pinetab2-phosh` | `.#image-pinetab2-phosh` |
+| PineTab2 | Installer | `.#pinetab2-installer` | `.#image-pinetab2-installer` |
+| Generic aarch64 | GNOME | `.#generic-aarch64-gnome` | `.#image-generic-aarch64-gnome` |
+| Generic aarch64 | Installer | `.#generic-aarch64-installer` | `.#image-generic-aarch64-installer` |
+| Generic aarch64 | GNOME + botany-bay | `.#cc-generic-aarch64-botany-bay` | `.#image-cc-generic-aarch64-botany-bay` |
+| Aarch64LUKS | GNOME + botany-bay | `.#aarch64-luks-botany-bay` | — (system only) |
+| x86_64 PC | Installer (console) | — | `.#image-x86pc` |
+| x86_64 PC | Installer (GNOME) | — | `.#image-x86pc-gnome` |
+| x86_64 PC | Installer (Plasma) | — | `.#image-x86pc-plasma` |
 
 ## Device docs
 
@@ -54,17 +58,41 @@ Copy `settings.nix.example` to `settings.nix` and edit — set your `username`,
 `initialPassword`, `authorizedKey`, `ssid`, `psk`, git config, and
 package preferences.
 
+## Variants (build targets)
+
+Build targets are defined in `variants/*.nix`. Each file describes a
+composition of host device module + desktop environment + profiles +
+platform + build type. `lib/fromVariant.nix` auto-discovers these files
+and generates `nixosConfigurations`, `packages` (images, installers,
+ISOs, u-boot), and `checks` — no `flake.nix` changes needed.
+
+```nix
+# variants/pinebookpro-plasma.nix
+{
+  variant = "pinebookpro-plasma";
+  host = "PineBookPro";
+  desktop = "plasma";                         # optional/plasma.nix
+  buildType = "image";                        # image|installer|iso|uboot|none
+  platform = "rockchip";
+  cross = true;
+  checkProfiles = [ "plasma" ];               # assertion checks to run
+}
+```
+
+Adding a new target: copy an existing variant, adjust fields, and it
+appears in all flake outputs automatically.
+
 ## Building an image
 
 The [Quick reference](#quick-reference) table below lists every buildable
 output. Builds run inside a Docker container (no host nix-daemon required):
 
 ```shell
-docker compose run build                      # PineBookPro GNOME (default)
-docker compose run build .#image-plasma
+docker compose run build                      # default: pinebookpro-gnome
+docker compose run build .#image-pinebookpro-plasma
 docker compose run build .#image-pinetab2-gnome
-docker compose run build .#image-generic-aarch64
-docker compose run build .#image-installer-x86pc
+docker compose run build .#image-generic-aarch64-gnome
+docker compose run build .#image-x86pc
 ```
 
 Flash the result:
@@ -84,8 +112,8 @@ docker compose run deploy <config> user@host
 docker compose run deploy <config> user@host --ask-sudo-password
 ```
 
-Replace `<config>` with the configuration name (e.g. `PineBookPro`,
-`PineTab2`, `GenericAarch64`, `PineBookPro-plasma`).
+Replace `<config>` with the configuration name (e.g. `pinebookpro-gnome`,
+`pinetab2-gnome`, `generic-aarch64-gnome`, `pinebookpro-plasma`).
 
 The `deploy` service mounts your SSH keys and `known_hosts` from
 `~/.ssh/`, stages `settings.nix`, and runs `nixos-rebuild --target-host
@@ -125,21 +153,16 @@ exists, `settings.nix` works as a flat attrset (backward compatible).
 
 ## Profiles
 
-Composable NixOS modules in `profiles/` that bundle packages and config
-for specific use-cases. Stack multiple profiles on one build:
-
-```nix
-# flake.nix
-PineBookPro-dev = myLib.rockchipOsConfigAarch64 "x86_64-linux"
-  ./hosts/nixos/PineBookPro ./hosts/common/optional/gnome.nix
-  [ ./profiles/base ./profiles/development ] null;
-```
+Composable NixOS modules in `profiles/<name>/default.nix` that bundle packages
+and config for specific use-cases. Stack multiple profiles on one build
+(via the variant's `profiles` list).
 
 | Profile | Contents |
 |---------|----------|
 | `profiles/base` | curl, wget, htop, git, tmux, vim |
 | `profiles/development` | gcc, clang, llvm, cmake, python3, nodejs, rust, postgresql |
 | `profiles/minimal` | curl, git |
+| `profiles/botany-bay` | Aarch64LUKS-specific: iwd, immich, trogdord, radarr, prowlarr, syncthing |
 
 ### Profile secrets
 
@@ -182,14 +205,15 @@ Run nix build and checks inside a container without a host nix-daemon:
 
 ```shell
 docker compose run check
-docker compose run build              # builds .#image-gnome (default)
-docker compose run build .#image-plasma
+docker compose run build              # builds .#image-pinebookpro-gnome (default)
+docker compose run build .#image-pinebookpro-plasma
 docker compose run build .#image-pinetab2-gnome
-docker compose run build .#image-generic-aarch64
-docker compose run build .#image-installer-generic-aarch64
+docker compose run build .#image-generic-aarch64-gnome
+docker compose run build .#image-x86pc
+docker compose run build .#image-x86pc-gnome
 docker compose run dev                # interactive shell
 docker compose run fmt
-docker compose run deploy PineBookPro user@host  # remote deploy
+docker compose run deploy pinebookpro-gnome user@host  # remote deploy
 ```
 
 A named Docker volume (`nix-store`) is used for `/nix`, preserving the
@@ -205,13 +229,13 @@ nix flake check                    # eval-only, no kernel compilation
 docker compose run check
 
 # Individual checks:
-nix build .#checks.x86_64-linux.PineBookPro-gnome
-docker compose run build .#checks.x86_64-linux.PineBookPro-gnome
-nix build .#checks.x86_64-linux.PineTab2-plasma
-docker compose run build .#checks.x86_64-linux.PineTab2-plasma
+nix build .#checks.x86_64-linux.pinebookpro-gnome
+docker compose run build .#checks.x86_64-linux.pinebookpro-gnome
+nix build .#checks.x86_64-linux.pinetab2-plasma
+docker compose run build .#checks.x86_64-linux.pinetab2-plasma
 nix build .#checks.x86_64-linux.generic-aarch64-gnome
 docker compose run build .#checks.x86_64-linux.generic-aarch64-gnome
-nix build .#checks.x86_64-linux.x86pc        # console installer
+nix build .#checks.x86_64-linux.x86pc
 docker compose run build .#checks.x86_64-linux.x86pc
 nix build .#checks.x86_64-linux.x86pc-gnome
 docker compose run build .#checks.x86_64-linux.x86pc-gnome
@@ -231,15 +255,15 @@ docker compose run fmt
 | Action | nix command | Docker compose |
 |--------|-------------|----------------|
 | Build image (PineBookPro GNOME) | `nix build` | `docker compose run build` |
-| Build image (PineBookPro dev profile) | `nix build .#image-dev` | `docker compose run build .#image-dev` |
+| Build image (PineBookPro dev profile) | `nix build .#image-pinebookpro-dev` | `docker compose run build .#image-pinebookpro-dev` |
 | Build image (PineTab2 GNOME) | `nix build .#image-pinetab2-gnome` | `docker compose run build .#image-pinetab2-gnome` |
-| Build image (generic aarch64) | `nix build .#image-generic-aarch64` | `docker compose run build .#image-generic-aarch64` |
-| Build installer (PineBookPro) | `nix build .#image-installer-pinebookpro` | `docker compose run build .#image-installer-pinebookpro` |
-| Build installer (PineTab2) | `nix build .#image-installer-pinetab2` | `docker compose run build .#image-installer-pinetab2` |
-| Build installer (generic aarch64) | `nix build .#image-installer-generic-aarch64` | `docker compose run build .#image-installer-generic-aarch64` |
-| Build x86_64 ISO (console) | `nix build .#image-installer-x86pc` | `docker compose run build .#image-installer-x86pc` |
-| Build x86_64 ISO (GNOME) | `nix build .#image-installer-x86pc-gnome` | `docker compose run build .#image-installer-x86pc-gnome` |
-| Build x86_64 ISO (Plasma) | `nix build .#image-installer-x86pc-plasma` | `docker compose run build .#image-installer-x86pc-plasma` |
+| Build image (generic aarch64 GNOME) | `nix build .#image-generic-aarch64-gnome` | `docker compose run build .#image-generic-aarch64-gnome` |
+| Build installer (PineBookPro) | `nix build .#image-pinebookpro-installer` | `docker compose run build .#image-pinebookpro-installer` |
+| Build installer (PineTab2) | `nix build .#image-pinetab2-installer` | `docker compose run build .#image-pinetab2-installer` |
+| Build installer (generic aarch64) | `nix build .#image-generic-aarch64-installer` | `docker compose run build .#image-generic-aarch64-installer` |
+| Build x86_64 ISO (console) | `nix build .#image-x86pc` | `docker compose run build .#image-x86pc` |
+| Build x86_64 ISO (GNOME) | `nix build .#image-x86pc-gnome` | `docker compose run build .#image-x86pc-gnome` |
+| Build x86_64 ISO (Plasma) | `nix build .#image-x86pc-plasma` | `docker compose run build .#image-x86pc-plasma` |
 | Build u-boot (PineBookPro) | `nix build .#uboot` | `docker compose run build .#uboot` |
 | Build u-boot (PineTab2) | `nix build .#uboot-pinetab2` | `docker compose run build .#uboot-pinetab2` |
 | Run all checks | `nix flake check` | `docker compose run check` |

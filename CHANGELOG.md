@@ -3,6 +3,19 @@
 ## [unreleased]
 
 ### Added
+- **Variant auto-discovery** — `variants/*.nix` files each define a build target (host, desktop, profiles, platform, buildType). `lib/fromVariant.nix` reads the directory and generates `nixosConfigurations`, `packages`, and `checks` automatically. Adding a new build target = dropping a new `.nix` file in `variants/`.
+- `lib/fromVariant.nix` — auto-dispatches to the correct builder (rockchip/generic/x86), derives the build artifact (sdImage/isoImage/uBoot), and generates check assertions with device and desktop-specific validation
+- `hosts/nixos/X86Pc/default.nix` — added `networking.hostName = "x86pc"` so the x86 variants have a stable hostname (was falling through to settings.nix)
+- `hosts/nixos/Aarch64LUKS/default.nix` — inlined filesystem, LUKS, and kernel module config (previously in gitignored `hardware-configuration.nix`)
+
+### Changed
+- `flake.nix` — simplified: nixosConfigurations, packages, checks, and formatting all generated from `variants/` via `lib/fromVariant.nix`. Removed `packages.nix` and `checks.nix` (replaced by auto-discovery)
+- `profiles/botany-bay/default.nix` — no longer imports `hardware-configuration.nix` (now inlined in Aarch64LUKS device module; the profile is device-agnostic)
+- `nixosConfigurations` keys changed from `PineBookPro` → `pinebookpro-gnome`, `PineTab2` → `pinetab2-gnome`, etc. (derived from variant filenames for consistency)
+- `packages` keys changed from `image-gnome` → `image-pinebookpro-gnome`, etc.
+- `checks` keys changed from `PineBookPro-gnome` → `pinebookpro-gnome`, etc.
+
+### Added
 - Cross-compilation overlays for PineBook Pro aarch64 builds:
   - `arcmenu` — added `glib` and `gitMinimal` to nativeBuildInputs
   - `gexiv2` — disabled gtk_doc to avoid gi-docgen target dependency

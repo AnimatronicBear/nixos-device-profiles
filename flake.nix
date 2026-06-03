@@ -26,6 +26,8 @@
     }:
 
     let
+      lib = nixpkgs.lib;
+
       settingsFile =
         if builtins.pathExists ./settings.nix then ./settings.nix else ./settings.nix.example;
       settings = import settingsFile;
@@ -40,13 +42,15 @@
           ;
       };
 
-      # Shorthand: no profiles, no per-node override
-      base = dr: dt: myLib.rockchipOsConfigAarch64 "x86_64-linux" dr dt [ ] null;
+      fromVariant = import ./lib/fromVariant.nix {
+        inherit lib myLib;
+        variantDir = ./variants;
+      };
 
-      # Shorthand: with profiles, no per-node override
-      baseWithProfiles =
-        dr: dt: profiles:
-        myLib.rockchipOsConfigAarch64 "x86_64-linux" dr dt profiles null;
+      # nixosConfigurations — top-level, always built from x86_64-linux.
+      # ARM variants cross-compile; variants with cross = false build natively
+      # (requires aarch64-linux builder or remote builder).
+      variantsX86 = fromVariant.buildForSystem "x86_64-linux" nixpkgs.legacyPackages.x86_64-linux;
     in
     {
       nixConfig = {
@@ -62,64 +66,18 @@
         ];
       };
 
-      nixosConfigurations = {
-        PineBookPro = base ./hosts/nixos/PineBookPro ./hosts/common/optional/gnome.nix;
-        PineBookPro-plasma = base ./hosts/nixos/PineBookPro ./hosts/common/optional/plasma.nix;
-        PineBookPro-phosh = base ./hosts/nixos/PineBookPro ./hosts/common/optional/phosh.nix;
-        PineBookPro-dev = baseWithProfiles ./hosts/nixos/PineBookPro ./hosts/common/optional/gnome.nix [
-          ./profiles/base/default.nix
-          ./profiles/development/default.nix
-        ];
-        PineTab2 = base ./hosts/nixos/PineTab2 ./hosts/common/optional/gnome.nix;
-        PineTab2-plasma = base ./hosts/nixos/PineTab2 ./hosts/common/optional/plasma.nix;
-        PineTab2-phosh = base ./hosts/nixos/PineTab2 ./hosts/common/optional/phosh.nix;
-        GenericAarch64 =
-          myLib.osConfigAarch64 "x86_64-linux" ./hosts/nixos/GenericAarch64 ./hosts/common/optional/gnome.nix
-            [ ]
-            null;
-        Aarch64LUKSBotanyBay =
-          myLib.osConfigAarch64 "aarch64-linux" ./hosts/nixos/Aarch64LUKS ./hosts/common/optional/gnome.nix
-            [
-              ./profiles/botany-bay/default.nix
-            ]
-            "Aarch64LUKSBotanyBay";
-        CCGenericAarch64BotanyBay =
-          myLib.osConfigAarch64 "x86_64-linux" ./hosts/nixos/GenericAarch64 ./hosts/common/optional/gnome.nix
-            [
-              ./profiles/botany-bay/default.nix
-            ]
-            "CCGenericAarch64BotanyBay";
-        GenericAarch64-installer =
-          myLib.installerConfigAarch64 "x86_64-linux" ./hosts/nixos/GenericAarch64 [ ]
-            null;
-      };
+      nixosConfigurations = variantsX86.nixosConfigurations;
     }
     // utils.lib.eachDefaultSystem (
       system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        lib = nixpkgs.lib;
-        checks = import ./checks.nix {
-          inherit
-            lib
-            pkgs
-            system
-            myLib
-            ;
-        };
-        myPackages = import ./packages.nix {
-          inherit
-            lib
-            pkgs
-            system
-            myLib
-            ;
-        };
+        variants = fromVariant.buildForSystem system pkgs;
       in
       {
-        packages = myPackages;
+        packages = variants.packages;
+        checks = variants.checks;
         formatter = pkgs.nixfmt-tree;
-        checks = checks;
       }
     );
 }
