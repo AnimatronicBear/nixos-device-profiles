@@ -47,6 +47,11 @@ let
     (myLib.osConfigAarch64 system ./hosts/nixos/GenericAarch64 ./hosts/common/optional/gnome.nix [ ]
       null
     ).config.system.build.sdImage;
+  image-generic-aarch64-botany-bay =
+    (myLib.osConfigAarch64 system ./hosts/nixos/GenericAarch64 ./hosts/common/optional/gnome.nix [
+      ./profiles/botany-bay/default.nix
+    ] null
+    ).config.system.build.sdImage;
   image-installer-generic-aarch64 =
     (myLib.installerConfigAarch64 system ./hosts/nixos/GenericAarch64 [ ] null)
     .config.system.build.sdImage;
