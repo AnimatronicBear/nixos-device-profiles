@@ -13,7 +13,8 @@ in
   environment.systemPackages = with pkgs; [
     docker-compose
     docker
-    vs-codium
+    vscodium-fhs
+    opencode
   ];
 
   environment.variables = {
