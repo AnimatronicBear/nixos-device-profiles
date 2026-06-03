@@ -80,13 +80,16 @@ dd if=result/iso-image/*.iso of=/dev/sdX bs=4M status=progress
 ## Updating a running system
 
 ```shell
-nixos-rebuild --flake .#<config> switch \
-  --target-host user@host \
-  --use-remote-sudo --ask-sudo-password
+docker compose run deploy <config> user@host
+docker compose run deploy <config> user@host --ask-sudo-password
 ```
 
 Replace `<config>` with the configuration name (e.g. `PineBookPro`,
 `PineTab2`, `GenericAarch64`, `PineBookPro-plasma`).
+
+The `deploy` service mounts your SSH keys and `known_hosts` from
+`~/.ssh/`, stages `settings.nix`, and runs `nixos-rebuild --target-host
+--use-remote-sudo` inside a container.
 
 ## Key packages
 
@@ -129,25 +132,28 @@ for specific use-cases. Stack multiple profiles on one build:
 # flake.nix
 PineBookPro-dev = myLib.rockchipOsConfigAarch64 "x86_64-linux"
   ./hosts/nixos/PineBookPro ./hosts/common/optional/gnome.nix
-  [ ./profiles/base.nix ./profiles/development.nix ] null;
+  [ ./profiles/base ./profiles/development ] null;
 ```
 
 | Profile | Contents |
 |---------|----------|
-| `profiles/base.nix` | curl, wget, htop, git, tmux, vim |
-| `profiles/development.nix` | gcc, clang, llvm, cmake, python3, nodejs, rust, postgresql |
-| `profiles/minimal.nix` | curl, git |
+| `profiles/base` | curl, wget, htop, git, tmux, vim |
+| `profiles/development` | gcc, clang, llvm, cmake, python3, nodejs, rust, postgresql |
+| `profiles/minimal` | curl, git |
 
 ### Profile secrets
 
-Each profile can have an optional `.secret.nix` companion (gitignored):
+Each profile can have an optional `secrets.nix` companion (gitignored):
 
 ```nix
-# profiles/development.secret.nix
+# profiles/development/secrets.nix
 { githubToken = "ghp_..."; npmToken = "npm_..."; }
 ```
 
-The builder auto-loads and merges all profile `.secret.nix` files, then
+Template files (`secrets.nix.example`) are tracked in git alongside each
+profile — copy to `secrets.nix` and fill in real values.
+
+The builder auto-loads and merges all profile `secrets.nix` files, then
 passes the result as a `secrets` specialArg to all NixOS and home-manager
 modules. Profile modules access secrets gracefully:
 
@@ -157,9 +163,6 @@ modules. Profile modules access secrets gracefully:
     lib.mkIf (secrets ? apiToken) secrets.apiToken;
 }
 ```
-
-Template files (`.secret.nix.example`) are tracked in git — copy to
-`.secret.nix` and fill in real values.
 
 ## Binary cache
 
@@ -186,6 +189,7 @@ docker compose run build .#image-generic-aarch64
 docker compose run build .#image-installer-generic-aarch64
 docker compose run dev                # interactive shell
 docker compose run fmt
+docker compose run deploy PineBookPro user@host  # remote deploy
 ```
 
 A named Docker volume (`nix-store`) is used for `/nix`, preserving the
@@ -241,3 +245,4 @@ docker compose run fmt
 | Run all checks | `nix flake check` | `docker compose run check` |
 | Format Nix files | `nix fmt` | `docker compose run fmt` |
 | Interactive shell | — | `docker compose run dev` |
+| Remote deploy | `nixos-rebuild --target-host user@host --use-remote-sudo --ask-sudo-password` | `docker compose run deploy <cfg> user@host` |
