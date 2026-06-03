@@ -64,6 +64,9 @@ services:
     volumes:
       - .:/workspace
       - nix-store:/nix
+      - /home/user/.ssh/config:/root/.ssh/config
+      - /home/user/.ssh/id_ed25519:/root/.ssh/id_ed25519
+      - /home/user/.ssh/id_ed25519.pub:/root/.ssh/id_ed25519.pub
     environment:
       NIX_CONFIG: |
         experimental-features = nix-command flakes
@@ -73,6 +76,7 @@ services:
         extra-trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nabam-nixos-rockchip.cachix.org-1:BQDltcnV8GS/G86tdvjLwLFz1WeFqSk7O9yl+DR0AVM
     stdin_open: true
     tty: true
+    user: 1000:1000
 
 volumes:
   nix-store:
