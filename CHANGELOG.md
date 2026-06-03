@@ -18,6 +18,7 @@
 
 ### Changed
 - `compose.yaml` — tuned build resource allocation: `max-jobs=2`, `cores=16` for build/check services; `max-jobs=4`, `cores=0` for fmt/dev
+- `scripts/deploy.sh` + `compose.yaml` — new `deploy` service that runs `nixos-rebuild --target-host` with SSH key/known_hosts mounts for remote NixOS deployment from within Docker
 
 ### Added
 - **Install profiles** — composable NixOS modules in `profiles/` that bundle packages, services, and config per use-case:

@@ -78,5 +78,27 @@ services:
     tty: true
     user: 1000:1000
 
+  deploy:
+    image: nixos/nix:${NIX_IMAGE_VERSION}
+    platform: linux/amd64
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - nix-store:/nix
+      - /home/user/.ssh/config:/root/.ssh/config
+      - /home/user/.ssh/id_ed25519:/root/.ssh/id_ed25519
+      - /home/user/.ssh/id_ed25519.pub:/root/.ssh/id_ed25519.pub
+      - /home/user/.ssh/known_hosts:/root/.ssh/known_hosts
+    environment:
+      NIX_CONFIG: |
+        experimental-features = nix-command flakes
+        max-jobs = 2
+        cores = 16
+        extra-substituters = https://cache.nixos.org https://nabam-nixos-rockchip.cachix.org
+        extra-trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= nabam-nixos-rockchip.cachix.org-1:BQDltcnV8GS/G86tdvjLwLFz1WeFqSk7O9yl+DR0AVM
+    entrypoint: ./scripts/deploy.sh
+    stdin_open: true
+    tty: true
+
 volumes:
   nix-store:
