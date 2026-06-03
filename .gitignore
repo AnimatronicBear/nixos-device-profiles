@@ -2,3 +2,5 @@
 settings.nix
 .env
 profiles/*/secrets.nix
+profiles/*/hardware-configuration.nix
+profiles/*/configuration.nix
