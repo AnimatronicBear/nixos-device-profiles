@@ -26,119 +26,58 @@
     }:
 
     let
+      lib = nixpkgs.lib;
+
       settingsFile =
         if builtins.pathExists ./settings.nix then ./settings.nix else ./settings.nix.example;
       settings = import settingsFile;
-      overlayModule =
-        { config, lib, ... }:
-        {
-          nixpkgs.overlays = import ./overlays;
-        };
 
-      osConfigAarch64 =
-        buildPlatform: deviceModule: variant:
-        nixpkgs.lib.nixosSystem {
-          system = "aarch64-linux";
-          specialArgs = { inherit rockchip buildPlatform settings; };
-          modules = [
-            overlayModule
-            { nixpkgs.hostPlatform = "aarch64-linux"; }
-            { nixpkgs.buildPlatform = buildPlatform; }
-            rockchip.nixosModules.sdImageRockchip
-            home-manager.nixosModules.home-manager
-            ./config.nix
-            variant
-            deviceModule
-          ];
-        };
+      myLib = import ./lib {
+        inherit
+          nixpkgs
+          rockchip
+          home-manager
+          utils
+          settings
+          ;
+      };
 
-      installerConfigAarch64 =
-        buildPlatform: deviceModule:
-        nixpkgs.lib.nixosSystem {
-          system = "aarch64-linux";
-          specialArgs = { inherit rockchip buildPlatform settings; };
-          modules = [
-            overlayModule
-            { nixpkgs.hostPlatform = "aarch64-linux"; }
-            { nixpkgs.buildPlatform = buildPlatform; }
-            rockchip.nixosModules.sdImageRockchipInstaller
-            home-manager.nixosModules.home-manager
-            ./config.nix
-            deviceModule
-          ];
-        };
+      fromVariant = import ./lib/fromVariant.nix {
+        inherit lib myLib;
+        variantDir = ./variants;
+      };
 
-      installerConfigX86 =
-        variant:
-        nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          specialArgs = { inherit settings; };
-          modules = [
-            overlayModule
-            { nixpkgs.hostPlatform = "x86_64-linux"; }
-            home-manager.nixosModules.home-manager
-            ./config.nix
-            ./devices/x86pc.nix
-            variant
-          ];
-        };
+      # nixosConfigurations — top-level, always built from x86_64-linux.
+      # ARM variants cross-compile; variants with cross = false build natively
+      # (requires aarch64-linux builder or remote builder).
+      variantsX86 = fromVariant.buildForSystem "x86_64-linux" nixpkgs.legacyPackages.x86_64-linux;
     in
     {
       nixConfig = {
         max-jobs = 4;
         cores = 0;
-        extra-substituters = [ "https://nabam-nixos-rockchip.cachix.org" ];
+        extra-substituters = [
+          "https://cache.nixos.org"
+          "https://nabam-nixos-rockchip.cachix.org"
+        ];
         extra-trusted-public-keys = [
+          "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
           "nabam-nixos-rockchip.cachix.org-1:BQDltcnV8GS/G86tdvjLwLFz1WeFqSk7O9yl+DR0AVM"
         ];
       };
 
-      nixosConfigurations.PineBookPro =
-        osConfigAarch64 "x86_64-linux" ./devices/pinebook-pro.nix
-          ./gnome.nix;
-      nixosConfigurations.PineBookPro-plasma =
-        osConfigAarch64 "x86_64-linux" ./devices/pinebook-pro.nix
-          ./plasma.nix;
-      nixosConfigurations.PineBookPro-phosh =
-        osConfigAarch64 "x86_64-linux" ./devices/pinebook-pro.nix
-          ./phosh.nix;
-      nixosConfigurations.PineTab2 = osConfigAarch64 "x86_64-linux" ./devices/pinetab2.nix ./gnome.nix;
-      nixosConfigurations.PineTab2-plasma =
-        osConfigAarch64 "x86_64-linux" ./devices/pinetab2.nix
-          ./plasma.nix;
-      nixosConfigurations.PineTab2-phosh =
-        osConfigAarch64 "x86_64-linux" ./devices/pinetab2.nix
-          ./phosh.nix;
+      nixosConfigurations = variantsX86.nixosConfigurations;
     }
     // utils.lib.eachDefaultSystem (
       system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        lib = nixpkgs.lib;
-        checks = import ./checks.nix {
-          inherit
-            lib
-            pkgs
-            system
-            osConfigAarch64
-            installerConfigX86
-            ;
-        };
-        myPackages = import ./packages.nix {
-          inherit
-            lib
-            pkgs
-            system
-            osConfigAarch64
-            installerConfigAarch64
-            installerConfigX86
-            ;
-        };
+        variants = fromVariant.buildForSystem system pkgs;
       in
       {
-        packages = myPackages;
+        packages = variants.packages;
+        checks = variants.checks;
         formatter = pkgs.nixfmt-tree;
-        checks = checks;
       }
     );
 }

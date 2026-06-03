@@ -2,8 +2,92 @@
 
 ## [unreleased]
 
+### Added
+- **Variant auto-discovery** — `variants/*.nix` files each define a build target (host, desktop, profiles, platform, buildType). `lib/fromVariant.nix` reads the directory and generates `nixosConfigurations`, `packages`, and `checks` automatically. Adding a new build target = dropping a new `.nix` file in `variants/`.
+- `lib/fromVariant.nix` — auto-dispatches to the correct builder (rockchip/generic/x86), derives the build artifact (sdImage/isoImage/uBoot), and generates check assertions with device and desktop-specific validation
+- `hosts/nixos/X86Pc/default.nix` — added `networking.hostName = "x86pc"` so the x86 variants have a stable hostname (was falling through to settings.nix)
+- `hosts/nixos/Aarch64LUKS/default.nix` — inlined filesystem, LUKS, and kernel module config (previously in gitignored `hardware-configuration.nix`)
+
+### Changed
+- `flake.nix` — simplified: nixosConfigurations, packages, checks, and formatting all generated from `variants/` via `lib/fromVariant.nix`. Removed `packages.nix` and `checks.nix` (replaced by auto-discovery)
+- `profiles/botany-bay/default.nix` — no longer imports `hardware-configuration.nix` (now inlined in Aarch64LUKS device module; the profile is device-agnostic)
+- `nixosConfigurations` keys changed from `PineBookPro` → `pinebookpro-gnome`, `PineTab2` → `pinetab2-gnome`, etc. (derived from variant filenames for consistency)
+- `packages` keys changed from `image-gnome` → `image-pinebookpro-gnome`, etc.
+- `checks` keys changed from `PineBookPro-gnome` → `pinebookpro-gnome`, etc.
+
+### Added
+- Cross-compilation overlays for PineBook Pro aarch64 builds:
+  - `arcmenu` — added `glib` and `gitMinimal` to nativeBuildInputs
+  - `gexiv2` — disabled gtk_doc to avoid gi-docgen target dependency
+  - `git` — added build platform C compiler for Rust build scripts
+  - `gom` — added `python3` to nativeBuildInputs
+  - `gupnp-av` — disabled gtk_doc during cross-compilation
+  - `libglycin` — set `CARGO_BUILD_TARGET=aarch64-unknown-linux-gnu` for meson/cargo cross-compilation
+  - `pysmbc` — symlink `pkg-config` to cross-compilation wrapper for setup.py
+
+### Fixed
+- PineBookPro uBoot reference — use `pkgs.ubootPinebookPro` instead of `rockchip.packages.${buildPlatform}.uBootPinebookPro`
+- PineBookPro `allowUnfreePredicate` — added `arm-trusted-firmware-rk3399` to allowed unfree packages
+
+### Changed
+- `compose.yaml` — tuned build resource allocation: `max-jobs=2`, `cores=16` for build/check services; `max-jobs=4`, `cores=0` for fmt/dev
+- `scripts/deploy.sh` + `compose.yaml` — new `deploy` service that runs `nixos-rebuild --target-host` with SSH key/known_hosts mounts for remote NixOS deployment from within Docker
+
+### Added
+- **Install profiles** — composable NixOS modules in `profiles/` that bundle packages, services, and config per use-case:
+  - `profiles/base/default.nix` — curl, wget, htop, git, tmux, vim
+  - `profiles/development/default.nix` — gcc, clang, llvm, cmake, python3, nodejs, rust, cargo, postgresql (imports base)
+  - `profiles/minimal/default.nix` — curl, git
+  - Profiles are full NixOS modules, stackable, and can set any option including home-manager
+  - Each profile can have an optional companion `secrets.nix` file (gitignored) for API tokens and credentials
+- **Per-node secrets** — `settings.nix` restructured with `Common` defaults and `nodes.<name>` overrides for per-device SSH keys, WiFi credentials, and passwords
+- `lib/default.nix` — all 5 builders accept `profileModules` (list of profile paths) and `configName` (for per-node settings resolution); loadSecrets helper auto-loads `secrets.nix` companions from each profile directory and passes merged `secrets` via `specialArgs`
+- `.#image-dev` — PineBookPro GNOME + base + development profile SD image
+- `.#checks.x86_64-linux.PineBookPro-dev` — eval check for dev profile variant
+- `.gitignore` pattern `profiles/*.secret.nix` → `profiles/*/secrets.nix` for subdirectory secrets
+
+### Changed
+- Profile files restructured from flat `.nix` files to subdirectories: `profiles/<name>/default.nix` with companion `secrets.nix` and `secrets.nix.example` in the same directory
+- `lib/default.nix` `loadSecrets` — changed from `removeSuffix ".nix" + ".secret.nix"` to `dirOf + "/secrets.nix"`
+
+### Changed
+- Restructured to EmergentMind/nix-config-starter layout:
+  - `config.nix` → `hosts/common/core/default.nix`
+  - `{gnome,plasma,phosh}.nix` → `hosts/common/optional/`
+  - `devices/pinebook-pro.nix` → `hosts/nixos/PineBookPro/default.nix`
+  - `devices/pinetab2.nix` → `hosts/nixos/PineTab2/default.nix`
+  - `devices/generic-aarch64.nix` → `hosts/nixos/GenericAarch64/default.nix`
+  - `devices/x86pc.nix` → `hosts/nixos/X86Pc/default.nix`
+  - `home.nix` → `home/_username_/common/core/default.nix`
+  - `flake.nix` — now thin, delegates builders to `lib/default.nix`
+  - Builder functions (`rockchipOsConfigAarch64`, `osConfigAarch64`, etc.) moved to `lib/default.nix`
+- `hosts/common/core/default.nix` — eliminated redundant `settings.nix` re-read; uses `settings` specialArg directly for all attributes (including secrets)
+- `flake.nix`, `compose.yaml` — added `cache.nixos.org` to `extra-substituters` with trusted public key for x86_64 binary cache substitution
+- `.env.example` — removed `NIX_CONFIG` (now hardcoded in `compose.yaml`)
+
+### Added
+- `lib/default.nix` — extracted builder functions from `flake.nix`
+- `shell.nix` — dev shell with `nixfmt-tree`, `nix-output-monitor`
+- `.envrc` — `use flake` for direnv auto-load
+- `justfile` — aliases for `build`, `check`, `update`, `fmt`, `dev`
+- `docs/pinebookpro.md`, `docs/pinetab2.md`, `docs/generic-aarch64.md`, `docs/x86pc.md` — per-device documentation with build, flash, u-boot, quirks, and related project links
+
 ### Fixed
 - `xdg-desktop-portal-1.20.4` integration tests (`dynamiclauncher`, `notification/sound_fd`) failing during x86 PC installer build — added overlay in `devices/x86pc.nix` to disable tests (they need D-Bus/portal services not present in the sandbox)
+- `installerConfigX86` — removed `overlayModule` from x86_64 installer config (overlays are for ARM cross-compilation only)
+
+### Added
+- `compose.yaml` — `deploy.resources` limits (14 CPUs, 22G RAM) to build service for OOM prevention
+- `compose.yaml` — `cat-result` service for extracting built image paths
+- **Generic aarch64 device support** — `devices/generic-aarch64.nix` for any extlinux-booting aarch64 SBC (no Rockchip dependency)
+- `flake.nix` — renamed Rockchip-specific builders to `rockchipOsConfigAarch64`/`rockchipInstallerConfigAarch64`; new generic `osConfigAarch64`/`installerConfigAarch64` without Rockchip
+- `nixosConfigurations.GenericAarch64` — GNOME SD image for generic aarch64
+- `nixosConfigurations.GenericAarch64-installer` — installer SD image for generic aarch64
+- `packages.nix` — `image-generic-aarch64`, `image-installer-generic-aarch64`
+- `checks.nix` — `generic-aarch64-gnome` eval-only check
+
+### Fixed
+- `compose.yaml` — changed `extra-trusted-substituters` → `extra-substituters` (works in single-user mode without nix-daemon); added `nabam-nixos-rockchip.cachix.org` to substituters so all builds share the cross-compilation binary cache
 
 ### Added
 - x86_64 PC installer ISOs — three variants: console (`.#image-installer-x86pc`), GNOME (`.#image-installer-x86pc-gnome`), Plasma (`.#image-installer-x86pc-plasma`). Built natively via `nixpkgs/nixos/modules/installer/cd-dvd/iso-image.nix`, no cross-compilation.
