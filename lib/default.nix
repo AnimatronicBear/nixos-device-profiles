@@ -12,7 +12,7 @@ let
   overlayModule =
     { config, lib, ... }:
     {
-      nixpkgs.overlays = import ../overlays;
+      # nixpkgs.overlays = import ../overlays;
     };
 
   # Load secrets from companion .secret.nix files for each profile module.
@@ -28,19 +28,19 @@ let
     builtins.foldl' (acc: s: acc // s) { } secretAttrs;
 
   # Resolve settings per config name.
-  # When configName is null or settings has no `nodes` attr, the raw settings
-  # attrset is used (backward compat with flat settings.nix).
-  # Otherwise, Common defaults are merged with per-node overrides.
+  # When settings.nix has a `nodes` attr (new format), `Common` defaults are
+  # merged with per-node overrides if configName is non-null.
+  # Otherwise (flat settings.nix), the raw attrset is returned as-is.
   resolveSettings =
     configName:
-    if configName == null || !(settings ? nodes) then
-      settings
-    else
+    if settings ? nodes then
       let
         common = settings.Common or { };
-        node = settings.nodes.${configName} or { };
+        node = if configName != null then settings.nodes.${configName} or { } else { };
       in
-      common // node;
+      common // node
+    else
+      settings;
 
   # Common base modules shared across all builder types
   baseModules = [
